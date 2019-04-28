@@ -22,6 +22,7 @@ When you load library by library(GENEMABR)
 if you see error:
 Error in fetch(key) :
   lazy-load database '/Library/Frameworks/R.framework/Versions/3.6/Resources/library/GENEMABR/help/GENEMABR.rdb' is corrupt
+  
 You can restart R session to solve the problem
 
 # Examples and vignettes
