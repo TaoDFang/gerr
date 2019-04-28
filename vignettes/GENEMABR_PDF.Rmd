@@ -1,8 +1,10 @@
 ---
-title:"GENEMABR"
-author:"Tao Fang, Daniel Marbach, Jitao David Zhang"
-date:"4/27/2019"
-output:pdf_document
+title: "GENEMABR_PDF"
+author: "Tao Fang"
+date: "4/28/2019"
+output: 
+    pdf_document:
+        latex_engine: lualatex
 ---
 
 ```{r setup, include=FALSE}
@@ -104,7 +106,7 @@ enrichment_results
 ```
 From results above, we can find our methods give a much more sparse while biological meaning results.It captures most important NF-kappaB signaling pathways from the gene module
 
-#Other functions in this methods
+# Other functions in this methods
 ```{r}
 ## if you use the default pathway databases(GO Ontologyand REACTOME).
 ## After you extracted enriched pathways, you can use find_root_ids function to find thier GO sub-root or REACTOME roots(ID) to help you better understanding the biological meanings of pathways.
