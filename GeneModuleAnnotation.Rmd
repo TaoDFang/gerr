@@ -40,12 +40,12 @@ library(Matrix)
 
 ## including some data in the data/ folder
 ## following link in https://bookdown.org/rdpeng/RProgDA/data-within-a-package.html
-human_go_ontology=readRDS(system.file("data", "human_go_ontology.rds", package = "GENEMABR"))
-human_reactome_ontology=readRDS(system.file("data", "human_reactome_ontology.rds", package = "GENEMABR"))
-gene_pathway_matrix=readRDS(system.file("data", "gene_pathway_matrix.rds", package = "GENEMABR"))
-human_go_roots=readRDS(system.file("data", "human_go_roots.rds", package = "GENEMABR"))
-human_go_sub_roots=readRDS(system.file("data", "human_go_sub_roots.rds", package = "GENEMABR"))
-human_reactome_roots=readRDS(system.file("data", "human_reactome_roots.rds", package = "GENEMABR"))
+human_go_ontology=readRDS(system.file("extdata", "human_go_ontology.rds", package = "GENEMABR"))
+human_reactome_ontology=readRDS(system.file("extdata", "human_reactome_ontology.rds", package = "GENEMABR"))
+gene_pathway_matrix=readRDS(system.file("extdata", "gene_pathway_matrix.rds", package = "GENEMABR"))
+human_go_roots=readRDS(system.file("extdata", "human_go_roots.rds", package = "GENEMABR"))
+human_go_sub_roots=readRDS(system.file("extdata", "human_go_sub_roots.rds", package = "GENEMABR"))
+human_reactome_roots=readRDS(system.file("extdata", "human_reactome_roots.rds", package = "GENEMABR"))
 
 ### remember if we want to documenet data automaticaly by document() funcion. We have to store datasets as rda format inseatd of into data/foler
 ### we could use use data to do the transformation or we could save the rda data in /data folder direactly 

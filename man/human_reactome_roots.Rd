@@ -9,7 +9,7 @@
 https://reactome.org/download-data
 }
 \usage{
-readRDS(system.file("data", "human_reactome_roots.rds", package = "GENEMABR"))
+readRDS(system.file("extdata", "human_reactome_roots.rds", package = "GENEMABR"))
 }
 \description{
 A rds R object contains REACTOME tree root nodes

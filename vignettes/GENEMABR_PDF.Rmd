@@ -56,6 +56,7 @@ if(!require(igraph)){
 ```
 
 To see the latest updates and releases or to post a bug, see our GitHub page at https://github.com/TaoDFang/GENEMABR. To ask questions about running GENEMABR, plase create issures at https://github.com/TaoDFang/GENEMABR/issues
+
 # Gene module annotation or gene set enrichment analysis via regression based method 
 To test a our method, we use a IgAN-associated module from the paper: Choobdar,S. et al. (2019) Open Community Challenge Reveals Molecular Network Modules with Key Roles in Diseases. bioRxiv, 265553.
 

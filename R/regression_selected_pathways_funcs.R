@@ -25,10 +25,10 @@
 #' @examples
 #' a=regression_selected_pathways(gene_input =c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50","RELB","TNFAIP3","NFKBIB","HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1","REL","TNIP2","TUBB6","MAP3K8"),gene_pathway_matrix="default",lambda=0.007956622,alpha=0.5)
 regression_selected_pathways=function(gene_input,gene_pathway_matrix="default",lambda=0.007956622,alpha=0.5,...){
-  library(glmnet)
+  #library(glmnet)
   addi_args=list(...)
   if(gene_pathway_matrix=="default"){
-     gene_pathway_matrix=readRDS(system.file("data", "gene_pathway_matrix.rds", package = "GENEMABR"))
+     gene_pathway_matrix=readRDS(system.file("extdata", "gene_pathway_matrix.rds", package = "GENEMABR"))
    }
   
   all_genes=rownames(gene_pathway_matrix)

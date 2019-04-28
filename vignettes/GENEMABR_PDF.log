@@ -1,4 +1,4 @@
-This is LuaTeX, Version 1.07.0 (TeX Live 2018)  (format=lualatex 2019.4.28)  28 APR 2019 22:15
+This is LuaTeX, Version 1.07.0 (TeX Live 2018)  (format=lualatex 2019.4.28)  28 APR 2019 23:56
  restricted system commands enabled.
 **GENEMABR_PDF.tex
 (./GENEMABR_PDF.tex
@@ -48,7 +48,7 @@ Inserting `luaotfload.aux.set_capheight' at position 3 in `luaotfload.patch_font
 '.
 Inserting `luaotfload.rewrite_fontname' at position 4 in `luaotfload.patch_font'
 .
-luaotfload | main : initialization completed in 0.110 seconds
+luaotfload | main : initialization completed in 0.107 seconds
 (/Users/taofang/Library/TinyTeX/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2018/09/03 v1.4i Standard LaTeX document class
 (/Users/taofang/Library/TinyTeX/texmf-dist/tex/latex/base/size10.clo
@@ -1071,56 +1071,52 @@ File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 LaTeX Font Info:    Try loading font information for U+msb on input line 194.
 (/Users/taofang/Library/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-<../Figures/Figure S5_ Module 283.png, id=42, 549.05125pt x 780.9175pt>
+) [2]
+<../Figures/Figure S5_ Module 283.png, id=62, 549.05125pt x 780.9175pt>
 File: ../Figures/Figure S5_ Module 283.png Graphic file (type png)
 <use ../Figures/Figure S5_ Module 283.png>
 Package luatex.def Info: ../Figures/Figure S5_ Module 283.png  used on input lin
-e 202.
+e 205.
 (luatex.def)             Requested size: 384.12381pt x 546.34062pt.
-[2
+[3
 Missing character: There is no κ (U+03BA) in font ec-lmss10!
-]
-Underfull \vbox (badness 10000) detected at line 244
- []
-
-[3<../Figures/Figure S5_ Module 283.png>] [4]
-Underfull \hbox (badness 1092) in paragraph at lines 266--267
+<../Figures/Figure S5_ Module 283.png>] [4]
+Underfull \hbox (badness 1092) in paragraph at lines 269--270
 []\T1/lmss/m/n/10 Users could use de-fault gene_path-way_ma-trix(``de-fault'') 
 so it will use pre-collected
  []
 
-LaTeX Font Info:    Try loading font information for TS1+fvm on input line 278.
+LaTeX Font Info:    Try loading font information for TS1+fvm on input line 281.
 (/Users/taofang/Library/TinyTeX/texmf-dist/tex/latex/bera/ts1fvm.fd
 File: ts1fvm.fd 2004/09/07 scalable font definitions for TS1/fvm.
 )
 LaTeX Font Info:    Font shape `TS1/fvm/m/it' in size <10> not available
-(Font)              Font shape `TS1/fvm/m/sl' tried instead on input line 278.
+(Font)              Font shape `TS1/fvm/m/sl' tried instead on input line 281.
 LaTeX Font Info:    Font shape `TS1/fvm/m/sl' will be
-(Font)              scaled to size 7.98004pt on input line 278.
+(Font)              scaled to size 7.98004pt on input line 281.
 [5] [6] [7]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 428.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 431.
 [8]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 428.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 431.
 (./GENEMABR_PDF.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 428.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 428.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 431.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 431.
 Package rerunfilecheck Info: File `GENEMABR_PDF.out' has not changed.
-(rerunfilecheck)             Checksum: CFCC4DB27ED810064D51746C8D157CA5;218.
+(rerunfilecheck)             Checksum: 92EBBF64D503568B5DB59CE93015E7DC;336.
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 428.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 431.
 )
 
 Here is how much of LuaTeX's memory you used:
- 23209 strings out of 494383
+ 23213 strings out of 494383
  100000,662416 words of node,token memory allocated
- 794 words of node memory still in use:
-   7 hlist, 2 vlist, 2 rule, 2 glue, 4 kern, 3 glyph, 11 attribute, 101 glue_spe
-c, 11 attribute_list, 2 shape, 1 write, 2 pdf_action nodes
-   avail lists: 1:2,2:992,3:123,4:198,5:263,6:20,7:3566,8:68,9:211,10:11,11:173
- 26650 multiletter control sequences out of 65536+600000
+ 804 words of node memory still in use:
+   7 hlist, 2 vlist, 2 rule, 2 glue, 4 kern, 3 glyph, 12 attribute, 101 glue_spe
+c, 12 attribute_list, 2 shape, 1 write, 3 pdf_action nodes
+   avail lists: 1:2,2:1022,3:128,4:204,5:280,6:21,7:3314,8:68,9:217,10:11,11:148
+ 26652 multiletter control sequences out of 65536+600000
  63 fonts using 8497367 bytes
  47i,14n,65p,1200b,446s stack positions out of 5000i,500n,10000p,200000b,100000s
 {/Users/taofang/Library/TinyTeX/texmf-dist/fonts/enc/dvips/base/8r.enc}{/Users/t
@@ -1135,10 +1131,10 @@ rary/TinyTeX/texmf-dist/fonts/type1/public/bera/fvmro8a.pfb></Users/taofang/Libr
 ary/TinyTeX/texmf-dist/fonts/type1/public/lm/lmss10.pfb></Users/taofang/Library/
 TinyTeX/texmf-dist/fonts/type1/public/lm/lmssbo10.pfb></Users/taofang/Library/Ti
 nyTeX/texmf-dist/fonts/type1/public/lm/lmssbx10.pfb>
-Output written on GENEMABR_PDF.pdf (8 pages, 273926 bytes).
+Output written on GENEMABR_PDF.pdf (8 pages, 278833 bytes).
 
-PDF statistics: 205 PDF objects out of 1000 (max. 8388607)
- 104 compressed objects within 2 object streams
- 17 named destinations out of 1000 (max. 131072)
- 33 words of extra memory for PDF output out of 10000 (max. 100000000)
+PDF statistics: 227 PDF objects out of 1000 (max. 8388607)
+ 111 compressed objects within 2 object streams
+ 19 named destinations out of 1000 (max. 131072)
+ 41 words of extra memory for PDF output out of 10000 (max. 100000000)
 

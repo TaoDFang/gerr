@@ -12,7 +12,7 @@ whose rows are all the genes(represented by gene HUGO gene symbols) from  GO ont
 For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j otherwise 0
 }
 \usage{
-readRDS(system.file("data", "gene_pathway_matrix.rds", package = "GENEMABR"))
+readRDS(system.file("extdata", "gene_pathway_matrix.rds", package = "GENEMABR"))
 }
 \description{
 A rds R object contains GO ontology and REACTOME ontology gene-pathway realtionship
