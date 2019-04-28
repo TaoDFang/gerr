@@ -19,4 +19,4 @@ To install the most recent release of GENEMABR (R >= 3.6) via devtools:
 
 # Examples and vignettes
 
-Check .html or .Rmd format files in  vignettes folder
+Check pdf format file in  vignettes folder
