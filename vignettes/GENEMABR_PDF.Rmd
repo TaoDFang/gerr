@@ -1,6 +1,6 @@
 ---
 title: "GENEMABR_PDF"
-author: "Tao Fang"
+author: "Tao Fang, Daniel Marbach, Jitao David Zhang"
 date: "4/28/2019"
 output: 
     pdf_document:
