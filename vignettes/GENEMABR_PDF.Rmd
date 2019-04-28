@@ -2,9 +2,13 @@
 title: "GENEMABR_PDF"
 author: "Tao Fang, Daniel Marbach, Jitao David Zhang"
 date: "4/28/2019"
-output: 
-    pdf_document:
+output:
+    BiocStyle::pdf_document:
         latex_engine: lualatex
+        toc: true
+vignette: >
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteIndexEntry{GENEMABR_PDF}
 ---
 
 ```{r setup, include=FALSE}
@@ -51,8 +55,7 @@ if(!require(igraph)){
 
 ```
 
-To see the latest updates and releases or to post a bug, see our GitHub page at (?). To ask questions about running celda, post a thread on Bioconductor support site at (?).
-
+To see the latest updates and releases or to post a bug, see our GitHub page at https://github.com/TaoDFang/GENEMABR. To ask questions about running GENEMABR, plase create issures at https://github.com/TaoDFang/GENEMABR/issues
 # Gene module annotation or gene set enrichment analysis via regression based method 
 To test a our method, we use a IgAN-associated module from the paper: Choobdar,S. et al. (2019) Open Community Challenge Reveals Molecular Network Modules with Key Roles in Diseases. bioRxiv, 265553.
 
@@ -94,7 +97,7 @@ This function use regularised regression methods to do enrichment analysis, such
 
 To use this method, use need to provide a binary gene pathways realationships matrix whose columns are the pathways/gene sets and whose rows are all the genes from pathways/gene sets.For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j otherwise 0.
 
-Users could use default gene_pathway_matrix("default") so it will use pre-collected gene_pathway_matrix from GO Ontology and REACTOME databaase.Altertatively, they could use their own customized gene_pathway_matrix 
+Users could use default gene_pathway_matrix("default") so it will use pre-collected gene_pathway_matrix from GO Ontology and REACTOME databaase.Altertatively, Users could use their own customized gene_pathway_matrix 
 ```{r}
 #Gene module from the paper
 gene_list=c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50","RELB","TNFAIP3","NFKBIB","HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1","REL","TNIP2","TUBB6","MAP3K8")
