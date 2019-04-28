@@ -1,5 +1,5 @@
 Package: GENEMABR
-Title: Gene module/list annotation (one line, title case)
+Title: Gene module/list annotation
 Version: 0.99.0
 Author: Tao Fang, Daniel Marbach, Zhang, Jitao David
 Maintainer: Tao Fang <talonvonfang@gmail.com>
@@ -8,7 +8,7 @@ Import: glmnet, igraph
 Depends: R (>= 3.6)
 bioViews:GeneSetEnrichment,Regression,Pathways
 License: Artistic-2.0
-BugReports: https://github.com/campbio/celda/issues
+BugReports: https://github.com/TaoDFang/GENEMABR/issues
 LazyData: false
 Encoding: UTF-8
 Suggests: knitr
