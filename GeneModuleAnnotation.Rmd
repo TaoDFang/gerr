@@ -1,0 +1,131 @@
+---
+title: "GeneModuleAnnotation"
+author: "Tao Fang"
+date: "4/6/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## load necesseary package
+```{r}
+library(devtools)
+library(roxygen2)
+library(Matrix)
+```
+## create R pacakge
+```{r}
+### remember here !!!
+### there are too much mysterios problems when creat R packge by devtools in Rstudio
+### use to creat to package via Rstuido directly
+#### nonono. Proplem last found.The path for following command should be right !!!!!
+#setwd("~/Documents/GeneModuleAnnotationPaper/github_package/GENEMABR/")
+#document()
+#setwd("~/Documents/GeneModuleAnnotationPaper/github_package/")
+#install("GENEMABR")
+#setwd("~/Documents/GeneModuleAnnotationPaper/github_package/")
+#create_package("GENEMABR")
+
+# go to this folder(/Users/taofang/Documents/GeneModuleAnnotationPaper/github_package/GENEMABR) and initialize it with git init command
+## then creat repository in github and connect map local repository(on my own computer) to github repository
+# git remote add origin https://github.com/TaoDFang/GENEMABR
+# git pull origin master --allow-unrelated-histories # only for first time
+# then update like normal git push 
+#git add .
+#git commit -m "First time creat"
+#git push origin master
+
+
+## including some data in the data/ folder
+## following link in https://bookdown.org/rdpeng/RProgDA/data-within-a-package.html
+human_go_ontology=readRDS(system.file("data", "human_go_ontology.rds", package = "GENEMABR"))
+human_reactome_ontology=readRDS(system.file("data", "human_reactome_ontology.rds", package = "GENEMABR"))
+gene_pathway_matrix=readRDS(system.file("data", "gene_pathway_matrix.rds", package = "GENEMABR"))
+human_go_roots=readRDS(system.file("data", "human_go_roots.rds", package = "GENEMABR"))
+human_go_sub_roots=readRDS(system.file("data", "human_go_sub_roots.rds", package = "GENEMABR"))
+human_reactome_roots=readRDS(system.file("data", "human_reactome_roots.rds", package = "GENEMABR"))
+
+### remember if we want to documenet data automaticaly by document() funcion. We have to store datasets as rda format inseatd of into data/foler
+### we could use use data to do the transformation or we could save the rda data in /data folder direactly 
+use_data(human_go_ontology,human_reactome_ontology,gene_pathway_matrix,human_go_roots,human_go_sub_roots,human_reactome_roots,overwrite = T)
+
+## then document data  in data.R files
+
+### to use .rda format dat in data/ folder, people can  use data() function like data(gene_pathway_matrix,package = "GENEMABR")
+### while there is a problem for data() function. It can only load data while cant not be assigned to a variable at first place. 
+### another problem is there are many proplems when we want to use it inside  function.  
+#### so we finnlay decided to store .rds format file in data/ folder and use it in this way: readRDS(system.file("data", "gene_pathway_matrix.rds", package = "GENEMABR"))
+### we will only temporily use .rda format file for documenation reason.
+### after documentation, we remove them from /data folder or we just dont push them to github by add someting in ".gitignore" file
+
+# steps to procees documentation for the pacakge
+setwd("~/Documents/GeneModuleAnnotationPaper/github_package/GENEMABR/")
+document()
+setwd("~/Documents/GeneModuleAnnotationPaper/github_package/")
+install("GENEMABR")
+library(GENEMABR)
+
+```
+
+
+
+## set data path
+```{r}
+raw_data_path="~/Documents/DreamChallengeModuleAnnotation/HPC_Disease_module_identification_DREAM_change/"
+```
+
+
+# Test function in R package
+
+### test regression_selected_pathways
+```{r}
+gene_input=c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50","RELB","TNFAIP3","NFKBIB","HSPA1A","NFKBIE",
+"SPAG9","NFKB2","ERLIN1","REL","TNIP2","TUBB6","MAP3K8")
+```
+
+### test other function
+```{r}
+## before this, we need to store he new dat into package
+################################################
+# human_go_roots=c("GO:0003674","GO:0005575","GO:0008150")
+# human_go_sub_roots=sapply(human_go_roots, function(x){
+#   as_ids(neighbors(human_go_ontology, x, mode = "out"))
+# })
+# human_go_sub_roots=unlist(human_go_sub_roots)
+# saveRDS(human_go_roots,file = paste("/Users/taofang/Documents/GeneModuleAnnotationPaper/code/GENEMABR/inst/extdata/","human_go_roots.rds",sep = ""))
+# saveRDS(human_go_sub_roots,file = paste("/Users/taofang/Documents/GeneModuleAnnotationPaper/code/GENEMABR/inst/extdata/","human_go_sub_roots.rds",sep = ""))
+# 
+# human_reactome_roots=which(sapply(sapply(V(human_reactome_ontology), function(x) neighbors(human_reactome_ontology,x, mode="in")), length) == 0)
+# human_reactome_roots=names(human_reactome_roots)
+# 
+# saveRDS(human_reactome_roots,file = paste("/Users/taofang/Documents/GeneModuleAnnotationPaper/code/GENEMABR/inst/extdata/","human_reactome_roots.rds",sep = ""))
+
+################################################
+
+## if you use the default pathway databases(GO Ontologyand REACTOME).
+## After you extracted enriched pathways, you can use find_root_ids function to find thier GO sub-root or REACTOME roots(ID) to help you better understanding the biological meanings of pathways.
+## Here we use GO sub-root instead of GO root nodes as there are only three roots in the GO ontology and it's not so specific 
+GO_Reactome_root_id=find_root_ids(selected_pathways=c("GO:0005834","R-HSA-111469"))
+
+# Or if you want to obatain root notes names instead of ID, you can use function from_id2name to get names from ids
+GO_Reactome_root_id_names=from_id2name(GO_Reactome_root_id)
+
+# Or you  can use function from_id2name to get names from ids 
+step2root=get_steps(selected_pathways=c("GO:0005834","R-HSA-111469"))
+
+# To view specic position of GO/REACOTEM pathways in ontology trees.
+# You can use Visualization tool at https://www.ebi.ac.uk/QuickGO/ and https://reactome.org/PathwayBrowser/ 
+
+```
+
+
+
+
+
+
+
+
+
+

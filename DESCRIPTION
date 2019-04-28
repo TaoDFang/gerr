@@ -1,10 +1,16 @@
 Package: GENEMABR
-Title: What the Package Does (one line, title case)
-Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-Depends: R (>= 3.6.0)
-License: What license is it under?
+Title: Gene module/list annotation (one line, title case)
+Version: 0.99.0
+Author: Tao Fang, Daniel Marbach, Zhang, Jitao David
+Maintainer: Tao Fang <talonvonfang@gmail.com>
+Description: Gene-set module annotation or gene-set enrichment within a regression based framework.
+Import: glmnet, igraph
+Depends: R (>= 3.6)
+bioViews:GeneSetEnrichment,Regression,Pathways
+License: Artistic-2.0
+BugReports: https://github.com/campbio/celda/issues
+LazyData: false
 Encoding: UTF-8
-LazyData: true
+Suggests: knitr
+VignetteBuilder: knitr
 RoxygenNote: 6.1.1
