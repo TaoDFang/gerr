@@ -7,9 +7,8 @@ output:
         latex_engine: lualatex
         toc: true
 vignette: >
-    %\VignetteEngine{knitr::rmarkdown}
     %\VignetteIndexEntry{GENEMABR_PDF}
-    %\VignetteEncoding{UTF-8}
+    %\VignetteEngine{knitr::rmarkdown}
 ---
 
 ```{r setup, include=FALSE}
