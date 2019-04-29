@@ -14,5 +14,9 @@ BugReports: https://github.com/TaoDFang/GENEMABR/issues
 LazyData: false
 Encoding: UTF-8
 VignetteBuilder: knitr
-Suggests: BiocStyle, knitr, rmarkdown
+Suggests:
+    BiocStyle,
+    knitr,
+    rmarkdown,
+    testthat (>= 2.1.0)
 RoxygenNote: 6.1.1

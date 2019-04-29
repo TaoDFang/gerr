@@ -9,6 +9,7 @@ output:
 vignette: >
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteIndexEntry{GENEMABR_PDF}
+    %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
@@ -88,7 +89,7 @@ Read non-central hypergeometric distribution test results from original paper
 for gene module based on GO Ontology and REACTOME pathways
 ```{r}
 hypergeometric_test_results=read.csv(file = "../data_raw/Daniel_S5_mod283.txt",
-                                     header = T,sep = "\t")
+                                     header = TRUE,sep = "\t")
 #filterd results with only P.noncentral value less then 0.05
 results_filtered=hypergeometric_test_results[hypergeometric_test_results$P.noncentral<0.05,]
 

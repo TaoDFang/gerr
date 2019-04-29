@@ -49,7 +49,7 @@ human_reactome_roots=readRDS(system.file("extdata", "human_reactome_roots.rds", 
 
 ### remember if we want to documenet data automaticaly by document() funcion. We have to store datasets as rda format inseatd of into data/foler
 ### we could use use data to do the transformation or we could save the rda data in /data folder direactly 
-use_data(human_go_ontology,human_reactome_ontology,gene_pathway_matrix,human_go_roots,human_go_sub_roots,human_reactome_roots,overwrite = T)
+use_data(human_go_ontology,human_reactome_ontology,gene_pathway_matrix,human_go_roots,human_go_sub_roots,human_reactome_roots,overwrite = TRUE)
 
 ## then document data  in data.R files
 

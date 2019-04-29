@@ -12,14 +12,14 @@ fisher_exact_test(selected_pathways, gene_input,
 
 \item{gene_input}{A vecor of genes to be annotated. It should have same ID types(E.g. Ensembl ID, HUGO gene symbol) as the genes in \emph{gene_pathway_matrix}.}
 
-\item{gene_pathway_matrix}{A binary background matrix whose columns are the pathways/gene sets and 
+\item{gene_pathway_matrix}{A binary background matrix whose columns are the pathways/gene sets and
 whose rows are all the genes from pathways/gene sets . It could be in sparse matrix format ((inherit from class "sparseMatrix" as in package Matrix) to save memory.
 For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j otherwise 0.
 Users could leave it as default value("default") so it will use pre-collected gene_pathway_matrix from GO Ontology and REACTOME databaase.
 Otherwise, they could use their own customized gene_pathway_matrix}
 }
 \value{
-A list of two elements: 
+A list of two elements:
 \itemize{
   \item selected_pathways_fisher_pvalue - Fisher exact pvalue for selected pathways
   \item selected_pathways_num_genes - The number of genes for selected pathways in background

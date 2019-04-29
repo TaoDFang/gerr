@@ -10,7 +10,7 @@ find_root_ids(selected_pathways)
 \item{selected_pathways}{A vecor of GO and/or REACTOME pathways IDs.}
 }
 \value{
-A list of GO sub-root or REACTOME root ids for provided pathways. 
+A list of GO sub-root or REACTOME root ids for provided pathways.
 If a certain pathway has morn than one GO sub-roots or REACTOME roots, they will be seperated by "#".
 }
 \description{

@@ -5,3 +5,7 @@ export(fisher_exact_test)
 export(from_id2name)
 export(get_steps)
 export(regression_selected_pathways)
+
+import(glmnet)
+import(igraph)
+import(Matrix)
