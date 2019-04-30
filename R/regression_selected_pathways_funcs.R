@@ -9,8 +9,8 @@
 #'Otherwise, they could use their own customized gene_pathway_matrix 
 #' @param lambda We use glmnet function to do regression. \emph{lambda} is an argument in \strong{glmnet}. See \strong{glmnet} function for more details
 #' Here we use default value 0.007956622 after preliminary study. It can be overridden by giving \emph{nlambda} and \emph{lambda.min.ratio arguments}.
-#' @param alpha The elasticnet mixing parameter, with 0≤α≤ 1. The penalty is defined as
-#'(1-α)/2||β||_2^2+α||β||_1.
+#' @param alpha The elasticnet mixing parameter, with \eqn{0~\leq~\alpha~\leq~1}. The penalty is defined as
+#'\eqn{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1}.
 #'alpha=1 is the lasso penalty, and alpha=0 the ridge penalty. Default value: 0.5.
 #' @param ... Other paramaters for glmnet function.
 #' @return  A list of four elements: 
