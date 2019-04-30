@@ -14,7 +14,6 @@
 #'   \item selected_pathways_fisher_pvalue - Fisher exact pvalue for selected pathways
 #'   \item selected_pathways_num_genes - The number of genes for selected pathways in background
 #' }
-#' @keywords
 #' @export
 #' @examples
 #' a=fisher_exact_test(selected_pathways=c("GO:0007250","GO:0008625"),gene_input=c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50","RELB","TNFAIP3","NFKBIB","HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1","REL","TNIP2","TUBB6","MAP3K8"),gene_pathway_matrix="default")
@@ -53,7 +52,6 @@ fisher_exact_test=function(selected_pathways,gene_input,gene_pathway_matrix="def
 #' @param selected_pathways A vecor of GO and/or REACTOME pathways IDs.
 #' @return  A list of GO sub-root or REACTOME root ids for provided pathways.
 #' If a certain pathway has morn than one GO sub-roots or REACTOME roots, they will be seperated by "#".
-#' @keywords
 #' @export
 #' @examples
 #' find_root_ids(selected_pathways=c("GO:0005834","R-HSA-111469"))
@@ -88,7 +86,6 @@ find_root_ids=function(selected_pathways){
 #' If you use the default pathway databases(GO Ontologyand REACTOME),this function can help you to get pathways names from pathways IDs.
 #' @param selected_pathways A list of GO and/or REACTOME pathways IDs. Each elmment is this list can be a single id or multi-ids seperated "#"
 #' @return  A list of GO sub-root or REACTOME root names for provided pathways.
-#' @keywords
 #' @export
 #' @examples
 #' from_id2name((selected_pathways=list(c("GO:0032991#GO:0044425#GO:0044464"),"R-HSA-5357801")))
@@ -127,7 +124,6 @@ from_id2name=function(selected_pathways){
 #' If you use the default pathway databases(GO Ontologyand REACTOME),this function allows you to extract  the distances from ceatain pathways to  GO roots or REACTOME roots nodes.
 #' @param selected_pathways A vecor of GO and/or REACTOME pathways IDs.
 #' @return  A list contains distances from pathways to GO root or REACTOME root nodes
-#' @keywords
 #' @export
 #' @examples
 #' get_steps(selected_pathways=c("GO:0005834","R-HSA-111469"))
