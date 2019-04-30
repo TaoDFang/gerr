@@ -7,7 +7,7 @@ Description: Gene-set module annotation or gene-set enrichment within a regressi
 Imports: glmnet,
          igraph,
          Matrix,
-Depends: R (>= 3.6)
+Depends: R
 biocViews: GeneSetEnrichment,Regression,Pathways,GO, Reactome
 License: Artistic-2.0
 BugReports: https://github.com/TaoDFang/GENEMABR/issues
