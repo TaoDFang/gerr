@@ -1,7 +1,7 @@
 Package: GENEMABR
 Title: Gene module/list annotation
 Version: 0.99.11
-Author: Tao Fang, Daniel Marbach, and Jitao David Zhang
+Author: Tao Fang and Jitao David Zhang, with inputs from Daniel Marbach
 Maintainer: Tao Fang <talonvonfang@gmail.com>
 Description: Gene-set module annotation or gene-set enrichment within a regression based framework.
 Imports: glmnet,
