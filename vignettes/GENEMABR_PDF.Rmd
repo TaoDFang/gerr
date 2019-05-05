@@ -12,8 +12,6 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-# for debugging
-# options(tinytex.verbose = TRUE)
 ```
 
 # Introduction
@@ -47,23 +45,9 @@ Altertivly, you can install GENEMABAR via git devltools?
 ```
 
 The package can be loaded using the `library` command.
+
 ```{r, eval=TRUE, message=FALSE} 
 library(GENEMABR)
-
-## load other required package to run GENEMABR
-if(!require(glmnet)){
-    install.packages("glmnet")
-    library(glmnet)
-}
-if(!require(Matrix)){
-    install.packages("Matrix")
-    library(Matrix)
-}
-if(!require(igraph)){
-    install.packages("igraph")
-    library(igraph)
-}
-
 ```
 
 To see the latest updates and releases or to post a bug, see our GitHub page 
@@ -88,7 +72,7 @@ from GO Ontology and REACTOME database by using the non-central hypergeometric d
 Read non-central hypergeometric distribution test results from original paper 
 for gene module based on GO Ontology and REACTOME pathways
 ```{r}
-hypergeometric_test_results=read.csv(file = "../data_raw/Daniel_S5_mod283.txt",
+hypergeometric_test_results=read.csv(file = "../inst/data_raw/Daniel_S5_mod283.txt",
                                      header = TRUE,sep = "\t")
 #filterd results with only P.noncentral value less then 0.05
 results_filtered=hypergeometric_test_results[hypergeometric_test_results$P.noncentral<0.05,]
