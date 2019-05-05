@@ -4,10 +4,12 @@
 \alias{mydata}
 \title{Helper function to load file}
 \usage{
-mydata(objName, packageName)
+mydata(objName, package)
 }
 \arguments{
-\item{file}{.RData file to be loaded}
+\item{objName}{Object name to be loaded}
+
+\item{package}{Package name to be loaded}
 }
 \value{
 The object
