@@ -9,7 +9,7 @@
 http://geneontology.org/docs/download-ontology/
 }
 \usage{
-readRDS(system.file("extdata", "human_go_sub_roots.rds", package = "GENEMABR"))
+human_go_sub_roots
 }
 \description{
 A rds R object contains GO ontology tree sub-root nodes (The children of root nodes).

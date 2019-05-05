@@ -9,7 +9,7 @@
 https://reactome.org/download-data
 }
 \usage{
-readRDS(system.file("extdata", "human_reactome_ontology.rds", package = "GENEMABR"))
+human_reactome_ontology
 }
 \description{
 A rds R object contains Reactome ontology relationships (tree structure)
