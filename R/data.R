@@ -43,6 +43,7 @@
 #' Homo sapiens GO ontology and REACTOME ontology gene-pathway realtionship
 #'@description A rds R object contains GO ontology and REACTOME ontology gene-pathway realtionship
 #'@format Formal class 'dgCMatrix' [package "Matrix"]
+#'@import Matrix
 #'@source http://geneontology.org/docs/download-ontology/, https://reactome.org/download-data
 #'A binary matrix whose columns are the pathways/gene sets from GO ontology and REATOME database and
 #'whose rows are all the genes(represented by gene HUGO gene symbols) from  GO ontology and REATOME database.
