@@ -19,7 +19,7 @@
 #' a=fisher_exact_test(selected_pathways=c("GO:0007250","GO:0008625"),gene_input=c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50","RELB","TNFAIP3","NFKBIB","HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1","REL","TNIP2","TUBB6","MAP3K8"),gene_pathway_matrix="default")
 fisher_exact_test=function(selected_pathways,gene_input,gene_pathway_matrix="default"){
   if(gene_pathway_matrix=="default"){
-    gene_pathway_matrix=readRDS(system.file("extdata", "gene_pathway_matrix.rds", package = "GENEMABR"))
+    gene_pathway_matrix=data("gene_pathway_matrix", package="GENEMABR")
   }
   all_genes=rownames(gene_pathway_matrix)
   module1_common_genes=intersect(all_genes,gene_input)
@@ -56,11 +56,11 @@ fisher_exact_test=function(selected_pathways,gene_input,gene_pathway_matrix="def
 #' @examples
 #' find_root_ids(selected_pathways=c("GO:0005834","R-HSA-111469"))
 find_root_ids=function(selected_pathways){
-  go_ontology=readRDS(system.file("extdata", "human_go_ontology.rds", package = "GENEMABR"))
-  go_sub_roots=readRDS(system.file("extdata", "human_go_sub_roots.rds", package = "GENEMABR"))
+  go_ontology=data("human_go_ontology", package="GENEMABR")
+  go_sub_roots=data("human_go_sub_roots", package="GENEMABR")
   go_sub_roots=unlist(go_sub_roots)
-  reactome_ontology=readRDS(system.file("extdata", "human_reactome_ontology.rds", package = "GENEMABR"))
-  reactome_roots=readRDS(system.file("extdata", "human_reactome_roots.rds", package = "GENEMABR"))
+  reactome_ontology=data("human_reactome_ontology", package="GENEMABR")
+  reactome_roots=data("human_reactome_roots", package="GENEMABR")
 
   find_roots=lapply(selected_pathways, function(x){
     if(grepl("GO",x)){
@@ -90,8 +90,8 @@ find_root_ids=function(selected_pathways){
 #' @examples
 #' from_id2name((selected_pathways=list(c("GO:0032991#GO:0044425#GO:0044464"),"R-HSA-5357801")))
 from_id2name=function(selected_pathways){
-  go_ontology=readRDS(system.file("extdata", "human_go_ontology.rds", package = "GENEMABR"))
-  reactome_ontology=readRDS(system.file("extdata", "human_reactome_ontology.rds", package = "GENEMABR"))
+  go_ontology=data("human_go_ontology", package="GENEMABR")
+  reactome_ontology=data("human_reactome_ontology", package="GENEMABR")
 
   go_ontology_names=V(go_ontology)$pathway_names
   names(go_ontology_names)=as_ids(V(go_ontology))
@@ -128,11 +128,11 @@ from_id2name=function(selected_pathways){
 #' @examples
 #' get_steps(selected_pathways=c("GO:0005834","R-HSA-111469"))
 get_steps=function(selected_pathways){
-  go_ontology=readRDS(system.file("extdata", "human_go_ontology.rds", package = "GENEMABR"))
-  go_roots=readRDS(system.file("extdata", "human_go_roots.rds", package = "GENEMABR"))
+  go_ontology=data("human_go_ontology", package="GENEMABR")
+  go_roots=data("human_go_roots", package = "GENEMABR")
   go_roots=unlist(go_roots)
-  reactome_ontology=readRDS(system.file("extdata", "human_reactome_ontology.rds", package = "GENEMABR"))
-  reactome_roots=readRDS(system.file("extdata", "human_reactome_roots.rds", package = "GENEMABR"))
+  reactome_ontology=data("human_reactome_ontology", package="GENEMABR")
+  reactome_roots=data("human_reactome_roots", package="GENEMABR")
 
   steps=lapply(selected_pathways,function(x){
     if(grepl("GO",x)){
