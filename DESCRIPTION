@@ -5,8 +5,9 @@ Author: Tao Fang and Jitao David Zhang, with inputs from Daniel Marbach
 Maintainer: Tao Fang <talonvonfang@gmail.com>
 Description: Gene-set module annotation or gene-set enrichment within a regression based framework.
 Imports: glmnet,
-         igraph
-Depends: R (>= 3.5.0), Matrix
+         igraph,
+	 Matrix
+Depends: R (>= 3.5.0)
 biocViews: GeneSetEnrichment,Regression,Pathways,GO, Reactome
 License: Artistic-2.0
 BugReports: https://github.com/TaoDFang/GENEMABR/issues
