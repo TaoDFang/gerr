@@ -5,3 +5,6 @@
 .Rhistory
 .git
 .gitignore
+
+Makefile
+GeneModuleAnnotation.Rmd
