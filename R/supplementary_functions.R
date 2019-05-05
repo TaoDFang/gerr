@@ -2,8 +2,8 @@
 #' @param objName Object name to be loaded
 #' @param package Package name to be loaded
 #' @return The object
-#' @importFrom utils data
 #' This function is temporarily set up to help the transition from .rds to .RData file
+#' @importFrom utils data
 mydata <- function(objName, package) {
     nv <- new.env()
     data(list=c(objName), package=package, envir = nv)
