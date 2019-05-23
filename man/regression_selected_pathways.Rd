@@ -10,7 +10,7 @@ regression_selected_pathways(gene_input, gene_pathway_matrix = "default",
 \arguments{
 \item{gene_input}{A vecor of genes to be annotated. It should have same ID types(Ensembl ID, HUGO gene symbol) as the genes in \emph{gene_pathway_matrix}.}
 
-\item{gene_pathway_matrix}{A binary background matrix whose columns are the pathways/gene sets and 
+\item{gene_pathway_matrix}{A binary background matrix whose columns are the pathways/gene sets and
 whose rows are all the genes from pathways/gene sets . It could be in sparse matrix format ((inherit from class "sparseMatrix" as in package Matrix) to save memory.
 For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j otherwise 0.
 Users could leave it as default value("default") so it will use pre-collected gene_pathway_matrix from GO Ontology and REACTOME databaase.
@@ -19,14 +19,14 @@ Otherwise, they could use their own customized gene_pathway_matrix}
 \item{lambda}{We use glmnet function to do regression. \emph{lambda} is an argument in \strong{glmnet}. See \strong{glmnet} function for more details
 Here we use default value 0.007956622 after preliminary study. It can be overridden by giving \emph{nlambda} and \emph{lambda.min.ratio arguments}.}
 
-\item{alpha}{The elasticnet mixing parameter, with 0≤α≤ 1. The penalty is defined as
-(1-α)/2||β||_2^2+α||β||_1.
+\item{alpha}{The elasticnet mixing parameter, with \eqn{0~\leq~\alpha~\leq~1}. The penalty is defined as
+\eqn{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1}.
 alpha=1 is the lasso penalty, and alpha=0 the ridge penalty. Default value: 0.5.}
 
 \item{...}{Other paramaters for glmnet function.}
 }
 \value{
-A list of four elements: 
+A list of four elements:
 \itemize{
   \item selected_pathways_names - Pathways names for selected pathways
   \item selected_pathways_coef - Regression coefficients value for selected pathways
@@ -38,5 +38,9 @@ A list of four elements:
 This function allows you to extracte enriched pathways for gene module/list via regressioin (elastic net) based method
 }
 \examples{
-a=regression_selected_pathways(gene_input =c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50","RELB","TNFAIP3","NFKBIB","HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1","REL","TNIP2","TUBB6","MAP3K8"),gene_pathway_matrix="default",lambda=0.007956622,alpha=0.5)
+rspResults <- regression_selected_pathways(gene_input=c("TRPC4AP","CDC37",
+  "TNIP1","IKBKB","NKIRAS2", "NFKBIA","TIMM50","RELB","TNFAIP3","NFKBIB",
+  "HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1","REL","TNIP2",
+  "TUBB6","MAP3K8"),
+ gene_pathway_matrix="default",lambda=0.007956622,alpha=0.5)
 }

@@ -1,2 +1,10 @@
 ^GENEMABR\.Rproj$
 ^\.Rproj\.user$
+
+.DS_Store
+.Rhistory
+.git
+.gitignore
+
+Makefile
+GeneModuleAnnotation.Rmd

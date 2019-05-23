@@ -1,10 +1,9 @@
 ---
 title: "GENEMABR_PDF"
-author: "Tao Fang, Daniel Marbach, Jitao David Zhang"
+author: "Tao Fang, Daniel Marbach and Jitao David Zhang"
 date: "4/28/2019"
 output:
     BiocStyle::pdf_document:
-        latex_engine: lualatex
         toc: true
 vignette: >
     %\VignetteIndexEntry{GENEMABR_PDF}
@@ -46,23 +45,9 @@ Altertivly, you can install GENEMABAR via git devltools?
 ```
 
 The package can be loaded using the `library` command.
+
 ```{r, eval=TRUE, message=FALSE} 
 library(GENEMABR)
-
-## load other required package to run GENEMABR
-if(!require(glmnet)){
-    install.packages("glmnet")
-    library(glmnet)
-}
-if(!require(Matrix)){
-    install.packages("Matrix")
-    library(Matrix)
-}
-if(!require(igraph)){
-    install.packages("igraph")
-    library(igraph)
-}
-
 ```
 
 To see the latest updates and releases or to post a bug, see our GitHub page 
@@ -76,18 +61,18 @@ To test a our method, we use a IgAN-associated module from the paper:
 Choobdar,S. et al. (2019) Open Community Challenge Reveals Molecular Network Modules with Key Roles in Diseases. bioRxiv, 265553.
 
 IgAN-associated module identified using the consensus analysis in the InWeb 
-protein-protein interaction network. The module comprises immune-related NF-κB signaling pathways.
+protein-protein interaction network. The module comprises immune-related NF-$\kappa$B signaling pathways.
 
 Figure below shows mannually extracted P-values for some important  pathways
 from GO Ontology and REACTOME database by using the non-central hypergeometric distribution test. 
 
-![](../Figures/Figure S5_ Module 283.png)
+![](../inst/figures/figureS5module283.png)
 
 
 Read non-central hypergeometric distribution test results from original paper 
 for gene module based on GO Ontology and REACTOME pathways
 ```{r}
-hypergeometric_test_results=read.csv(file = "../data_raw/Daniel_S5_mod283.txt",
+hypergeometric_test_results=read.csv(file = "../inst/data_raw/Daniel_S5_mod283.txt",
                                      header = TRUE,sep = "\t")
 #filterd results with only P.noncentral value less then 0.05
 results_filtered=hypergeometric_test_results[hypergeometric_test_results$P.noncentral<0.05,]

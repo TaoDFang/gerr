@@ -9,7 +9,7 @@
 http://geneontology.org/docs/download-ontology/
 }
 \usage{
-readRDS(system.file("extdata", "human_go_roots.rds", package = "GENEMABR"))
+human_go_roots
 }
 \description{
 A rds R object contains GO ontology tree root nodes

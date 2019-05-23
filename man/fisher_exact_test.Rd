@@ -30,5 +30,8 @@ This function allows you to compute two sided fish exact pvalue of gene list for
 To know more about this method. I recommend you to read the paper (Enrichment or depletion of a GO category within a class of genes: which test?) for more details
 }
 \examples{
-a=fisher_exact_test(selected_pathways=c("GO:0007250","GO:0008625"),gene_input=c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50","RELB","TNFAIP3","NFKBIB","HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1","REL","TNIP2","TUBB6","MAP3K8"),gene_pathway_matrix="default")
+fetRes <- fisher_exact_test(selected_pathways=c("GO:0007250","GO:0008625"),
+  gene_input=c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50",
+     "RELB","TNFAIP3","NFKBIB","HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1",
+     "REL","TNIP2","TUBB6","MAP3K8"),gene_pathway_matrix="default")
 }

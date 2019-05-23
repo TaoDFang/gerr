@@ -7,12 +7,12 @@
 \format{Formal class 'dgCMatrix' [package "Matrix"]}
 \source{
 http://geneontology.org/docs/download-ontology/, https://reactome.org/download-data
-A binary matrix whose columns are the pathways/gene sets from GO ontology and REATOME database and 
+A binary matrix whose columns are the pathways/gene sets from GO ontology and REATOME database and
 whose rows are all the genes(represented by gene HUGO gene symbols) from  GO ontology and REATOME database.
 For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j otherwise 0
 }
 \usage{
-readRDS(system.file("extdata", "gene_pathway_matrix.rds", package = "GENEMABR"))
+gene_pathway_matrix
 }
 \description{
 A rds R object contains GO ontology and REACTOME ontology gene-pathway realtionship

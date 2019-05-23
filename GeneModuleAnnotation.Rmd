@@ -40,23 +40,25 @@ library(Matrix)
 
 ## including some data in the data/ folder
 ## following link in https://bookdown.org/rdpeng/RProgDA/data-within-a-package.html
-human_go_ontology=readRDS(system.file("extdata", "human_go_ontology.rds", package = "GENEMABR"))
-human_reactome_ontology=readRDS(system.file("extdata", "human_reactome_ontology.rds", package = "GENEMABR"))
-gene_pathway_matrix=readRDS(system.file("extdata", "gene_pathway_matrix.rds", package = "GENEMABR"))
-human_go_roots=readRDS(system.file("extdata", "human_go_roots.rds", package = "GENEMABR"))
-human_go_sub_roots=readRDS(system.file("extdata", "human_go_sub_roots.rds", package = "GENEMABR"))
-human_reactome_roots=readRDS(system.file("extdata", "human_reactome_roots.rds", package = "GENEMABR"))
+human_go_ontology=data("human_go_ontology.rds", package = "GENEMABR")
+human_reactome_ontology=data("human_reactome_ontology.rds", package = "GENEMABR")
+gene_pathway_matrix=data("gene_pathway_matrix.rds", package = "GENEMABR")
+human_go_roots=data("human_go_roots.rds", package = "GENEMABR")
+human_go_sub_roots=data("human_go_sub_roots.rds", package = "GENEMABR")
+human_reactome_roots=data("human_reactome_roots.rds", package = "GENEMABR")
 
 ### remember if we want to documenet data automaticaly by document() funcion. We have to store datasets as rda format inseatd of into data/foler
 ### we could use use data to do the transformation or we could save the rda data in /data folder direactly 
-use_data(human_go_ontology,human_reactome_ontology,gene_pathway_matrix,human_go_roots,human_go_sub_roots,human_reactome_roots,overwrite = TRUE)
+## use_data(human_go_ontology,human_reactome_ontology,gene_pathway_matrix,human_go_roots,human_go_sub_roots,human_reactome_roots,overwrite = TRUE)
 
 ## then document data  in data.R files
+
+## [David 05.05]: it's possible to use data by some twists. See my commitsa and comments. My question is whether such data should be accessible to the users? If yes, data() is a good solution; if not, 'R/sysdata.rda' can be used (see http://r-pkgs.had.co.nz/data.html)
 
 ### to use .rda format dat in data/ folder, people can  use data() function like data(gene_pathway_matrix,package = "GENEMABR")
 ### while there is a problem for data() function. It can only load data while cant not be assigned to a variable at first place. 
 ### another problem is there are many proplems when we want to use it inside  function.  
-#### so we finnlay decided to store .rds format file in data/ folder and use it in this way: readRDS(system.file("data", "gene_pathway_matrix.rds", package = "GENEMABR"))
+#### so we finnlay decided to store .rds format file in data/ folder and use it in this way: data("gene_pathway_matrix.rds", package = "GENEMABR"))
 ### we will only temporily use .rda format file for documenation reason.
 ### after documentation, we remove them from /data folder or we just dont push them to github by add someting in ".gitignore" file
 

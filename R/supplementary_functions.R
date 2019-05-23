@@ -1,3 +1,15 @@
+#' Helper function to load file
+#' @param objName Object name to be loaded
+#' @param package Package name to be loaded
+#' @return The object
+#' This function is temporarily set up to help the transition from .rds to .RData file
+#' @importFrom utils data
+mydata <- function(objName, package) {
+    nv <- new.env()
+    data(list=c(objName), package=package, envir = nv)
+    return(get(objName, envir = nv))
+}
+
 #' fisher_exact_test
 #'
 #' This function allows you to compute two sided fish exact pvalue of gene list for selected  pathways
@@ -14,13 +26,15 @@
 #'   \item selected_pathways_fisher_pvalue - Fisher exact pvalue for selected pathways
 #'   \item selected_pathways_num_genes - The number of genes for selected pathways in background
 #' }
-#' @keywords
 #' @export
 #' @examples
-#' a=fisher_exact_test(selected_pathways=c("GO:0007250","GO:0008625"),gene_input=c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50","RELB","TNFAIP3","NFKBIB","HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1","REL","TNIP2","TUBB6","MAP3K8"),gene_pathway_matrix="default")
+#' fetRes <- fisher_exact_test(selected_pathways=c("GO:0007250","GO:0008625"),
+#'   gene_input=c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50",
+#'      "RELB","TNFAIP3","NFKBIB","HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1",
+#'      "REL","TNIP2","TUBB6","MAP3K8"),gene_pathway_matrix="default")
 fisher_exact_test=function(selected_pathways,gene_input,gene_pathway_matrix="default"){
   if(gene_pathway_matrix=="default"){
-    gene_pathway_matrix=readRDS(system.file("extdata", "gene_pathway_matrix.rds", package = "GENEMABR"))
+    gene_pathway_matrix=mydata("gene_pathway_matrix", package="GENEMABR")
   }
   all_genes=rownames(gene_pathway_matrix)
   module1_common_genes=intersect(all_genes,gene_input)
@@ -53,16 +67,16 @@ fisher_exact_test=function(selected_pathways,gene_input,gene_pathway_matrix="def
 #' @param selected_pathways A vecor of GO and/or REACTOME pathways IDs.
 #' @return  A list of GO sub-root or REACTOME root ids for provided pathways.
 #' If a certain pathway has morn than one GO sub-roots or REACTOME roots, they will be seperated by "#".
-#' @keywords
+#' @importFrom igraph ego gorder
 #' @export
 #' @examples
 #' find_root_ids(selected_pathways=c("GO:0005834","R-HSA-111469"))
 find_root_ids=function(selected_pathways){
-  go_ontology=readRDS(system.file("extdata", "human_go_ontology.rds", package = "GENEMABR"))
-  go_sub_roots=readRDS(system.file("extdata", "human_go_sub_roots.rds", package = "GENEMABR"))
+  go_ontology=mydata("human_go_ontology", package="GENEMABR")
+  go_sub_roots=mydata("human_go_sub_roots", package="GENEMABR")
   go_sub_roots=unlist(go_sub_roots)
-  reactome_ontology=readRDS(system.file("extdata", "human_reactome_ontology.rds", package = "GENEMABR"))
-  reactome_roots=readRDS(system.file("extdata", "human_reactome_roots.rds", package = "GENEMABR"))
+  reactome_ontology=mydata("human_reactome_ontology", package="GENEMABR")
+  reactome_roots=mydata("human_reactome_roots", package="GENEMABR")
 
   find_roots=lapply(selected_pathways, function(x){
     if(grepl("GO",x)){
@@ -88,13 +102,13 @@ find_root_ids=function(selected_pathways){
 #' If you use the default pathway databases(GO Ontologyand REACTOME),this function can help you to get pathways names from pathways IDs.
 #' @param selected_pathways A list of GO and/or REACTOME pathways IDs. Each elmment is this list can be a single id or multi-ids seperated "#"
 #' @return  A list of GO sub-root or REACTOME root names for provided pathways.
-#' @keywords
+#' @importFrom igraph V as_ids
 #' @export
 #' @examples
 #' from_id2name((selected_pathways=list(c("GO:0032991#GO:0044425#GO:0044464"),"R-HSA-5357801")))
 from_id2name=function(selected_pathways){
-  go_ontology=readRDS(system.file("extdata", "human_go_ontology.rds", package = "GENEMABR"))
-  reactome_ontology=readRDS(system.file("extdata", "human_reactome_ontology.rds", package = "GENEMABR"))
+  go_ontology=mydata("human_go_ontology", package="GENEMABR")
+  reactome_ontology=mydata("human_reactome_ontology", package="GENEMABR")
 
   go_ontology_names=V(go_ontology)$pathway_names
   names(go_ontology_names)=as_ids(V(go_ontology))
@@ -127,16 +141,16 @@ from_id2name=function(selected_pathways){
 #' If you use the default pathway databases(GO Ontologyand REACTOME),this function allows you to extract  the distances from ceatain pathways to  GO roots or REACTOME roots nodes.
 #' @param selected_pathways A vecor of GO and/or REACTOME pathways IDs.
 #' @return  A list contains distances from pathways to GO root or REACTOME root nodes
-#' @keywords
+#' @importFrom igraph distances
 #' @export
 #' @examples
 #' get_steps(selected_pathways=c("GO:0005834","R-HSA-111469"))
 get_steps=function(selected_pathways){
-  go_ontology=readRDS(system.file("extdata", "human_go_ontology.rds", package = "GENEMABR"))
-  go_roots=readRDS(system.file("extdata", "human_go_roots.rds", package = "GENEMABR"))
+  go_ontology=mydata("human_go_ontology", package="GENEMABR")
+  go_roots=mydata("human_go_roots", package = "GENEMABR")
   go_roots=unlist(go_roots)
-  reactome_ontology=readRDS(system.file("extdata", "human_reactome_ontology.rds", package = "GENEMABR"))
-  reactome_roots=readRDS(system.file("extdata", "human_reactome_roots.rds", package = "GENEMABR"))
+  reactome_ontology=mydata("human_reactome_ontology", package="GENEMABR")
+  reactome_roots=mydata("human_reactome_roots", package="GENEMABR")
 
   steps=lapply(selected_pathways,function(x){
     if(grepl("GO",x)){
