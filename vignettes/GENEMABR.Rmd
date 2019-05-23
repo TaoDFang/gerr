@@ -39,11 +39,6 @@ if (!requireNamespace("BiocManager", quietly=TRUE)){
 BiocManager::install("GENEMABR")
 ```
 
-Altertivly, you can install GENEMABAR via git devltools
-```{r}
-library(devtools)
-install_github("TaoDFang/GENEMABR")
-```
 
 The package can be loaded using the `library` command.
 
