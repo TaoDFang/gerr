@@ -42,5 +42,5 @@ rspResults <- regression_selected_pathways(gene_input=c("TRPC4AP","CDC37",
   "TNIP1","IKBKB","NKIRAS2", "NFKBIA","TIMM50","RELB","TNFAIP3","NFKBIB",
   "HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1","REL","TNIP2",
   "TUBB6","MAP3K8"),
- gene_pathway_matrix=Null,lambda=0.007956622,alpha=0.5)
+ gene_pathway_matrix=NULL,lambda=0.007956622,alpha=0.5)
 }
