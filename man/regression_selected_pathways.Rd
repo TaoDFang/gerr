@@ -4,7 +4,7 @@
 \alias{regression_selected_pathways}
 \title{regression_selected_pathways}
 \usage{
-regression_selected_pathways(gene_input, gene_pathway_matrix = "default",
+regression_selected_pathways(gene_input, gene_pathway_matrix = NULL,
   lambda = 0.007956622, alpha = 0.5, ...)
 }
 \arguments{
@@ -13,7 +13,7 @@ regression_selected_pathways(gene_input, gene_pathway_matrix = "default",
 \item{gene_pathway_matrix}{A binary background matrix whose columns are the pathways/gene sets and
 whose rows are all the genes from pathways/gene sets . It could be in sparse matrix format ((inherit from class "sparseMatrix" as in package Matrix) to save memory.
 For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j otherwise 0.
-Users could leave it as default value("default") so it will use pre-collected gene_pathway_matrix from GO Ontology and REACTOME databaase.
+Users could leave it as default value then  it will use pre-collected gene_pathway_matrix from GO Ontology and REACTOME databaase.
 Otherwise, they could use their own customized gene_pathway_matrix}
 
 \item{lambda}{We use glmnet function to do regression. \emph{lambda} is an argument in \strong{glmnet}. See \strong{glmnet} function for more details
@@ -42,5 +42,5 @@ rspResults <- regression_selected_pathways(gene_input=c("TRPC4AP","CDC37",
   "TNIP1","IKBKB","NKIRAS2", "NFKBIA","TIMM50","RELB","TNFAIP3","NFKBIB",
   "HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1","REL","TNIP2",
   "TUBB6","MAP3K8"),
- gene_pathway_matrix="default",lambda=0.007956622,alpha=0.5)
+ gene_pathway_matrix=Null,lambda=0.007956622,alpha=0.5)
 }

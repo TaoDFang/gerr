@@ -9,7 +9,7 @@ For more details about this method. Please refer to out paper:(?)
 
 # Installation Instructions
 
-To install the most recent release of GENEMABR (R >= 3.6) via devtools:
+To install the most recent release of GENEMABR (R >= 3.5) via devtools:
  ```R
  library(devtools)
  install_github("TaoDFang/GENEMABR")

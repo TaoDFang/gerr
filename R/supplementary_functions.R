@@ -19,7 +19,7 @@ mydata <- function(objName, package) {
 #' @param gene_pathway_matrix A binary background matrix whose columns are the pathways/gene sets and
 #'whose rows are all the genes from pathways/gene sets . It could be in sparse matrix format ((inherit from class "sparseMatrix" as in package Matrix) to save memory.
 #'For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j otherwise 0.
-#'Users could leave it as default value("default") so it will use pre-collected gene_pathway_matrix from GO Ontology and REACTOME databaase.
+#'Users could leave it as default value then  it will use pre-collected gene_pathway_matrix from GO Ontology and REACTOME databaase.
 #'Otherwise, they could use their own customized gene_pathway_matrix
 #' @return  A list of two elements:
 #' \itemize{
@@ -31,9 +31,9 @@ mydata <- function(objName, package) {
 #' fetRes <- fisher_exact_test(selected_pathways=c("GO:0007250","GO:0008625"),
 #'   gene_input=c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50",
 #'      "RELB","TNFAIP3","NFKBIB","HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1",
-#'      "REL","TNIP2","TUBB6","MAP3K8"),gene_pathway_matrix="default")
-fisher_exact_test=function(selected_pathways,gene_input,gene_pathway_matrix="default"){
-  if(gene_pathway_matrix=="default"){
+#'      "REL","TNIP2","TUBB6","MAP3K8"),gene_pathway_matrix=Null)
+fisher_exact_test=function(selected_pathways,gene_input,gene_pathway_matrix=NULL){
+  if(is.null(gene_pathway_matrix)){
     gene_pathway_matrix=mydata("gene_pathway_matrix", package="GENEMABR")
   }
   all_genes=rownames(gene_pathway_matrix)

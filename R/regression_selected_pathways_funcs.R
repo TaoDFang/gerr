@@ -5,7 +5,7 @@
 #' @param gene_pathway_matrix A binary background matrix whose columns are the pathways/gene sets and
 #'whose rows are all the genes from pathways/gene sets . It could be in sparse matrix format ((inherit from class "sparseMatrix" as in package Matrix) to save memory.
 #'For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j otherwise 0.
-#'Users could leave it as default value("default") so it will use pre-collected gene_pathway_matrix from GO Ontology and REACTOME databaase.
+#'Users could leave it as default value then  it will use pre-collected gene_pathway_matrix from GO Ontology and REACTOME databaase.
 #'Otherwise, they could use their own customized gene_pathway_matrix
 #' @param lambda We use glmnet function to do regression. \emph{lambda} is an argument in \strong{glmnet}. See \strong{glmnet} function for more details
 #' Here we use default value 0.007956622 after preliminary study. It can be overridden by giving \emph{nlambda} and \emph{lambda.min.ratio arguments}.
@@ -27,10 +27,10 @@
 #'   "TNIP1","IKBKB","NKIRAS2", "NFKBIA","TIMM50","RELB","TNFAIP3","NFKBIB",
 #'   "HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1","REL","TNIP2",
 #'   "TUBB6","MAP3K8"),
-#'  gene_pathway_matrix="default",lambda=0.007956622,alpha=0.5)
-regression_selected_pathways=function(gene_input,gene_pathway_matrix="default",lambda=0.007956622,alpha=0.5,...){
+#'  gene_pathway_matrix=Null,lambda=0.007956622,alpha=0.5)
+regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,lambda=0.007956622,alpha=0.5,...){
   addi_args=list(...)
-  if(gene_pathway_matrix=="default"){
+  if(is.null(gene_pathway_matrix)){
      gene_pathway_matrix <- mydata("gene_pathway_matrix", "GENEMABR")
    }
 
@@ -57,7 +57,7 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix="default",l
     names(selected_coef)=selected_pathways
 
     if(length(selected_pathways)>0){
-      fisher_exact_test_results=fisher_exact_test(selected_pathways,module_common_genes,gene_pathway_matrix="default" )
+      fisher_exact_test_results=fisher_exact_test(selected_pathways,module_common_genes,gene_pathway_matrix=NULL )
       selected_pathways_fisher_pvalue=fisher_exact_test_results$selected_pathways_fisher_pvalue
       selected_pathways_num_genes=fisher_exact_test_results$selected_pathways_num_genes
 
