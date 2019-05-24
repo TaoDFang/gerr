@@ -50,9 +50,7 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
   if(length(module_common_genes)>1){
     module_labels[module_common_genes]=1
     if(addi_args['family']=="binomial" || addi_args['family']=="multinomial"){
-        #print("yes my lord")
-        #print(module_labels)
-        module_labels=as.factor(module_labels)
+        module_labels = factor(module_labels)
     }
     # if(length(addi_args)==0){
     #   cvfit=glmnet(gene_pathway_matrix,module_labels,lambda = lambda,alpha =alpha,...)
@@ -60,7 +58,7 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
     #   cvfit=glmnet(gene_pathway_matrix,module_labels,alpha =alpha,...)
     # }
     cvfit=cv.glmnet(gene_pathway_matrix,module_labels,alpha =alpha,...)
-    print(cvfit$lambda.min)
+    ## print(cvfit$lambda.min)
     coef=coef(cvfit, s = "lambda.min")
     non0index=coef@i[-1]   #remove intercept
     non0coef=coef@x[-1]
