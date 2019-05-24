@@ -26,7 +26,7 @@
 #'   \item selected_pathways_fisher_pvalue - Fisher exact pvalue for selected pathways
 #'   \item selected_pathways_num_genes - The number of genes for selected pathways in background
 #' }
-#' @importFrom glmnet glmnet
+#' @importFrom glmnet glmnet cv.glmnet
 #' @export
 #' @examples
 #' rspResults <- regression_selected_pathways(gene_input=c("TRPC4AP","CDC37",
