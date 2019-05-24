@@ -8,3 +8,6 @@ build:
 
 document:
 	${R} --silent --vanilla -e "devtools::document('.')"
+
+install:
+	${R} --silent --vanilla -e "devtools::install('.')"
