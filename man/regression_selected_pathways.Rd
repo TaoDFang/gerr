@@ -5,7 +5,8 @@
 \title{regression_selected_pathways}
 \usage{
 regression_selected_pathways(gene_input, gene_pathway_matrix = NULL,
-  alpha = 0.5, family = c("gaussian", "binomial"), ...)
+  alpha = 0.5, family = c("gaussian", "binomial"), lambda = NULL,
+  ...)
 }
 \arguments{
 \item{gene_input}{A vecor of genes to be annotated. It should have same ID types(Ensembl ID, HUGO gene symbol)
@@ -25,20 +26,23 @@ alpha=1 is the lasso penalty, and alpha=0 the ridge penalty. Default value: 0.5.
 
 \item{family}{Response type, currently \code{gaussian} and \code{binomial} are supported. Future extensions are likely.}
 
-\item{...}{Other paramaters for glmnet function.}
-
 \item{lambda}{We use glmnet function to do regression. \emph{lambda} is an argument in \strong{glmnet}.
 See \strong{glmnet} function for more details
 Here we use default value 0.007956622 after preliminary study. It can be overridden by giving \emph{nlambda}
 and \emph{lambda.min.ratio arguments}.}
+
+\item{...}{Other paramaters for glmnet function.}
+
+\item{lambda}{A user supplied lambda sequence, see \code{\link{glmnet}} and use with care.}
 }
 \value{
-A list of four elements:
+A list of following elements:
 \itemize{
   \item selected_pathways_names - Pathways names for selected pathways
   \item selected_pathways_coef - Regression coefficients value for selected pathways
   \item selected_pathways_fisher_pvalue - Fisher exact pvalue for selected pathways
   \item selected_pathways_num_genes - The number of genes for selected pathways in background
+  \item model - the trained glmnet model
 }
 }
 \description{
