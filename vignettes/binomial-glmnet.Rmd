@@ -27,5 +27,6 @@ gaussRes
 
 ```{r binomFit}
 binomRes <- regression_selected_pathways(gene_input=gene_list,family="binomial",alpha=0.5)
+binomRes
 ```
 
