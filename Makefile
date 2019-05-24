@@ -9,5 +9,5 @@ build:
 document:
 	${R} --silent --vanilla -e "devtools::document('.')"
 
-install:
+install: document
 	${R} --silent --vanilla -e "devtools::install('.')"
