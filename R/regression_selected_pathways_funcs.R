@@ -19,13 +19,15 @@
 #'\eqn{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1}.
 #'alpha=1 is the lasso penalty, and alpha=0 the ridge penalty. Default value: 0.5.
 #' @param family Response type, currently \code{gaussian} and \code{binomial} are supported. Future extensions are likely.
+#' @param lambda A user supplied lambda sequence, see \code{\link{glmnet}} and use with care.
 #' @param ... Other paramaters for glmnet function.
-#' @return  A list of four elements:
+#' @return  A list of following elements:
 #' \itemize{
 #'   \item selected_pathways_names - Pathways names for selected pathways
 #'   \item selected_pathways_coef - Regression coefficients value for selected pathways
 #'   \item selected_pathways_fisher_pvalue - Fisher exact pvalue for selected pathways
 #'   \item selected_pathways_num_genes - The number of genes for selected pathways in background
+#'   \item model - the trained glmnet model
 #' }
 #' @importFrom glmnet glmnet cv.glmnet
 #' @export
@@ -36,7 +38,7 @@
 #'   "TUBB6","MAP3K8"),
 #'  gene_pathway_matrix=NULL,lambda=0.007956622,alpha=0.5)
 regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=0.5,
-                                      family=c("gaussian", "binomial"),
+                                      family=c("gaussian", "binomial"), lambda=NULL,
                                       ...){
   family <- match.arg(family)
   if(is.null(gene_pathway_matrix)){
