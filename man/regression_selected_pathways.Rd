@@ -5,7 +5,7 @@
 \title{regression_selected_pathways}
 \usage{
 regression_selected_pathways(gene_input, gene_pathway_matrix = NULL,
-  alpha = 0.5, ...)
+  alpha = 0.5, family = c("gaussian", "binomial"), ...)
 }
 \arguments{
 \item{gene_input}{A vecor of genes to be annotated. It should have same ID types(Ensembl ID, HUGO gene symbol)
@@ -22,6 +22,8 @@ Otherwise, they could use their own customized gene_pathway_matrix}
 \item{alpha}{The elasticnet mixing parameter, with \eqn{0~\leq~\alpha~\leq~1}. The penalty is defined as
 \eqn{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1}.
 alpha=1 is the lasso penalty, and alpha=0 the ridge penalty. Default value: 0.5.}
+
+\item{family}{Response type, currently \code{gaussian} and \code{binomial} are supported. Future extensions are likely.}
 
 \item{...}{Other paramaters for glmnet function.}
 
