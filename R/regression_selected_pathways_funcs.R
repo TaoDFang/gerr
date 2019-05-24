@@ -36,7 +36,7 @@
 #'   "TNIP1","IKBKB","NKIRAS2", "NFKBIA","TIMM50","RELB","TNFAIP3","NFKBIB",
 #'   "HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1","REL","TNIP2",
 #'   "TUBB6","MAP3K8"),
-#'  gene_pathway_matrix=NULL,lambda=0.007956622,alpha=0.5)
+#'  gene_pathway_matrix=NULL,lambda=NULL,alpha=0.5)
 regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=0.5,
                                       family=c("gaussian", "binomial"), lambda=NULL,
                                       ...){
