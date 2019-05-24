@@ -1,12 +1,13 @@
 ---
 title: "Understanding binomial glmnet"
 author: "Jitao David Zhang"
-date: `r format(Sys.Date(), "%B %d, %Y")`
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output: 
-  html:
+  BiocStyle::pdf_document:
     toc: true
-    fig_height: 4
-    fig_width: 4
+vignette: >
+    %\VignetteIndexEntry{understanding binomial glmnet}
+    %\VignetteEngine{knitr::rmarkdown}
 ---
 
 ```{r setup, include=FALSE}
