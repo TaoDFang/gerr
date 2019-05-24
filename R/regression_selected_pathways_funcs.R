@@ -56,7 +56,6 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
   module_labels[module_common_genes]=1
   if(family=="binomial"){
     module_labels = factor(module_labels)
-    lambda <- NULL
   } else if (family=="gaussian" && is.null(lambda)) {
     lambda <- c(0.007956622,0.01)
   }
