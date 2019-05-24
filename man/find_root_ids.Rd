@@ -14,7 +14,8 @@ A list of GO sub-root or REACTOME root ids for provided pathways.
 If a certain pathway has morn than one GO sub-roots or REACTOME roots, they will be seperated by "#".
 }
 \description{
-If you use the default pathway databases(GO Ontologyand REACTOME),this function allows you to extract GO sub-roots or REACTOME roots for certain pathways from GO or REACTOME
+If you use the default pathway databases(GO Ontologyand REACTOME),this function allows you to extract GO sub-roots
+or REACTOME roots for certain pathways from GO or REACTOME
 to help you better understanding thier the biological meanings
 }
 \examples{

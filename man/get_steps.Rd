@@ -13,7 +13,8 @@ get_steps(selected_pathways)
 A list contains distances from pathways to GO root or REACTOME root nodes
 }
 \description{
-If you use the default pathway databases(GO Ontologyand REACTOME),this function allows you to extract  the distances from ceatain pathways to  GO roots or REACTOME roots nodes.
+If you use the default pathway databases(GO Ontologyand REACTOME),this function allows you to extract  the distances
+ from ceatain pathways to  GO roots or REACTOME roots nodes.
 }
 \examples{
 get_steps(selected_pathways=c("GO:0005834","R-HSA-111469"))

@@ -1,14 +1,20 @@
 #' regression_selected_pathways
 #'
-#' This function allows you to extracte enriched pathways for gene module/list via regressioin (elastic net) based method
-#' @param gene_input A vecor of genes to be annotated. It should have same ID types(Ensembl ID, HUGO gene symbol) as the genes in \emph{gene_pathway_matrix}.
+#' This function allows you to extracte enriched pathways for gene module/list via regressioin (elastic net)
+#' based method
+#' @param gene_input A vecor of genes to be annotated. It should have same ID types(Ensembl ID, HUGO gene symbol)
+#' as the genes in \emph{gene_pathway_matrix}.
 #' @param gene_pathway_matrix A binary background matrix whose columns are the pathways/gene sets and
-#'whose rows are all the genes from pathways/gene sets . It could be in sparse matrix format ((inherit from class "sparseMatrix" as in package Matrix) to save memory.
+#'whose rows are all the genes from pathways/gene sets . It could be in sparse matrix format ((inherit from class
+#' "sparseMatrix" as in package Matrix) to save memory.
 #'For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j otherwise 0.
-#'Users could leave it as default value then  it will use pre-collected gene_pathway_matrix from GO Ontology and REACTOME databaase.
+#'Users could leave it as default value then  it will use pre-collected gene_pathway_matrix from GO Ontology and
+#'REACTOME databaase.
 #'Otherwise, they could use their own customized gene_pathway_matrix
-#' @param lambda We use glmnet function to do regression. \emph{lambda} is an argument in \strong{glmnet}. See \strong{glmnet} function for more details
-#' Here we use default value 0.007956622 after preliminary study. It can be overridden by giving \emph{nlambda} and \emph{lambda.min.ratio arguments}.
+#' @param lambda We use glmnet function to do regression. \emph{lambda} is an argument in \strong{glmnet}.
+#' See \strong{glmnet} function for more details
+#' Here we use default value 0.007956622 after preliminary study. It can be overridden by giving \emph{nlambda}
+#' and \emph{lambda.min.ratio arguments}.
 #' @param alpha The elasticnet mixing parameter, with \eqn{0~\leq~\alpha~\leq~1}. The penalty is defined as
 #'\eqn{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1}.
 #'alpha=1 is the lasso penalty, and alpha=0 the ridge penalty. Default value: 0.5.
@@ -41,7 +47,7 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,lambda
   names(module_labels)=all_genes
   module_common_genes=intersect(all_genes,gene_input)
 
-  if(length(module_common_genes)>1){                     # should set a lower thereshold for num of module common genes, more than 50%
+  if(length(module_common_genes)>1){
     module_labels[module_common_genes]=1
     if(length(addi_args)==0){
       cvfit=glmnet(gene_pathway_matrix,module_labels,lambda = lambda,alpha =alpha,...)

@@ -54,7 +54,8 @@ at https://github.com/TaoDFang/GENEMABR/issues
 
 # Gene module annotation or gene set enrichment analysis via regression based method 
 To test a our method, we use a IgAN-associated module from the paper: 
-Choobdar,S. et al. (2019) Open Community Challenge Reveals Molecular Network Modules with Key Roles in Diseases. bioRxiv, 265553.
+Choobdar,S. et al. (2019) Open Community Challenge Reveals Molecular Network Modules with Key Roles in Diseases. bioRxiv,
+265553.
 
 IgAN-associated module identified using the consensus analysis in the InWeb 
 protein-protein interaction network. The module comprises immune-related NF-$\kappa$B signaling pathways.
@@ -107,7 +108,8 @@ whereas elastic net will behave between lasso and ridge.
 
 To use this method, use need to provide a binary gene pathways realationships 
 matrix whose columns are the pathways/gene sets and whose rows are all the genes 
-from pathways/gene sets.For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j otherwise 0.
+from pathways/gene sets.For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j 
+otherwise 0.
 
 Users could use default gene_pathway_matrix("default") so it will use pre-collected 
 gene_pathway_matrix from GO Ontology and REACTOME databaase.Altertatively, Users 

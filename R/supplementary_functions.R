@@ -13,13 +13,18 @@ mydata <- function(objName, package) {
 #' fisher_exact_test
 #'
 #' This function allows you to compute two sided fish exact pvalue of gene list for selected  pathways
-#' To know more about this method. I recommend you to read the paper (Enrichment or depletion of a GO category within a class of genes: which test?) for more details
-#' @param selected_pathways A vecor of pathways to be used for enrichment analysis for genes in \emph{gene_input}.It should have same ID types(E.g. pathway ID, pathway names) as the pathways in \emph{gene_pathway_matrix}.
-#' @param gene_input A vecor of genes to be annotated. It should have same ID types(E.g. Ensembl ID, HUGO gene symbol) as the genes in \emph{gene_pathway_matrix}.
+#' To know more about this method. I recommend you to read the paper (Enrichment or depletion of a GO category
+#' within a class of genes: which test?) for more details
+#' @param selected_pathways A vecor of pathways to be used for enrichment analysis for genes in \emph{gene_input}.
+#' It should have same ID types(E.g. pathway ID, pathway names) as the pathways in \emph{gene_pathway_matrix}.
+#' @param gene_input A vecor of genes to be annotated. It should have same ID types(E.g. Ensembl ID, HUGO gene symbol)
+#'  as the genes in \emph{gene_pathway_matrix}.
 #' @param gene_pathway_matrix A binary background matrix whose columns are the pathways/gene sets and
-#'whose rows are all the genes from pathways/gene sets . It could be in sparse matrix format ((inherit from class "sparseMatrix" as in package Matrix) to save memory.
+#'whose rows are all the genes from pathways/gene sets . It could be in sparse matrix format ((inherit from class
+#' "sparseMatrix" as in package Matrix) to save memory.
 #'For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j otherwise 0.
-#'Users could leave it as default value then  it will use pre-collected gene_pathway_matrix from GO Ontology and REACTOME databaase.
+#'Users could leave it as default value then  it will use pre-collected gene_pathway_matrix from GO Ontology
+#'and REACTOME databaase.
 #'Otherwise, they could use their own customized gene_pathway_matrix
 #' @return  A list of two elements:
 #' \itemize{
@@ -55,14 +60,16 @@ fisher_exact_test=function(selected_pathways,gene_input,gene_pathway_matrix=NULL
     selected_pathways_fisher_pvalue[fisher_pathway]=fisher_result[['p.value']]
     selected_pathways_num_genes[fisher_pathway]=sum(gene_pathway_matrix[,fisher_pathway])
   }
-  return(list(selected_pathways_fisher_pvalue=selected_pathways_fisher_pvalue,selected_pathways_num_genes=selected_pathways_num_genes))
+  return(list(selected_pathways_fisher_pvalue=selected_pathways_fisher_pvalue,
+              selected_pathways_num_genes=selected_pathways_num_genes))
 }
 
 
 
 #' find_root_ids
 #'
-#' If you use the default pathway databases(GO Ontologyand REACTOME),this function allows you to extract GO sub-roots or REACTOME roots for certain pathways from GO or REACTOME
+#' If you use the default pathway databases(GO Ontologyand REACTOME),this function allows you to extract GO sub-roots
+#' or REACTOME roots for certain pathways from GO or REACTOME
 #' to help you better understanding thier the biological meanings
 #' @param selected_pathways A vecor of GO and/or REACTOME pathways IDs.
 #' @return  A list of GO sub-root or REACTOME root ids for provided pathways.
@@ -99,8 +106,10 @@ find_root_ids=function(selected_pathways){
 
 #' from_id2name
 #'
-#' If you use the default pathway databases(GO Ontologyand REACTOME),this function can help you to get pathways names from pathways IDs.
-#' @param selected_pathways A list of GO and/or REACTOME pathways IDs. Each elmment is this list can be a single id or multi-ids seperated "#"
+#' If you use the default pathway databases(GO Ontologyand REACTOME),this function can help you to get pathways
+#' names from pathways IDs.
+#' @param selected_pathways A list of GO and/or REACTOME pathways IDs. Each elmment is this list can be a single
+#' id or multi-ids seperated "#"
 #' @return  A list of GO sub-root or REACTOME root names for provided pathways.
 #' @importFrom igraph V as_ids
 #' @export
@@ -138,7 +147,8 @@ from_id2name=function(selected_pathways){
 
 #' get_steps
 #'
-#' If you use the default pathway databases(GO Ontologyand REACTOME),this function allows you to extract  the distances from ceatain pathways to  GO roots or REACTOME roots nodes.
+#' If you use the default pathway databases(GO Ontologyand REACTOME),this function allows you to extract  the distances
+#'  from ceatain pathways to  GO roots or REACTOME roots nodes.
 #' @param selected_pathways A vecor of GO and/or REACTOME pathways IDs.
 #' @return  A list contains distances from pathways to GO root or REACTOME root nodes
 #' @importFrom igraph distances

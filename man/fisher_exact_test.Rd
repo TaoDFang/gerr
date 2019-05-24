@@ -8,14 +8,18 @@ fisher_exact_test(selected_pathways, gene_input,
   gene_pathway_matrix = NULL)
 }
 \arguments{
-\item{selected_pathways}{A vecor of pathways to be used for enrichment analysis for genes in \emph{gene_input}.It should have same ID types(E.g. pathway ID, pathway names) as the pathways in \emph{gene_pathway_matrix}.}
+\item{selected_pathways}{A vecor of pathways to be used for enrichment analysis for genes in \emph{gene_input}.
+It should have same ID types(E.g. pathway ID, pathway names) as the pathways in \emph{gene_pathway_matrix}.}
 
-\item{gene_input}{A vecor of genes to be annotated. It should have same ID types(E.g. Ensembl ID, HUGO gene symbol) as the genes in \emph{gene_pathway_matrix}.}
+\item{gene_input}{A vecor of genes to be annotated. It should have same ID types(E.g. Ensembl ID, HUGO gene symbol)
+as the genes in \emph{gene_pathway_matrix}.}
 
 \item{gene_pathway_matrix}{A binary background matrix whose columns are the pathways/gene sets and
-whose rows are all the genes from pathways/gene sets . It could be in sparse matrix format ((inherit from class "sparseMatrix" as in package Matrix) to save memory.
+whose rows are all the genes from pathways/gene sets . It could be in sparse matrix format ((inherit from class
+"sparseMatrix" as in package Matrix) to save memory.
 For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j otherwise 0.
-Users could leave it as default value then  it will use pre-collected gene_pathway_matrix from GO Ontology and REACTOME databaase.
+Users could leave it as default value then  it will use pre-collected gene_pathway_matrix from GO Ontology
+and REACTOME databaase.
 Otherwise, they could use their own customized gene_pathway_matrix}
 }
 \value{
@@ -27,7 +31,8 @@ A list of two elements:
 }
 \description{
 This function allows you to compute two sided fish exact pvalue of gene list for selected  pathways
-To know more about this method. I recommend you to read the paper (Enrichment or depletion of a GO category within a class of genes: which test?) for more details
+To know more about this method. I recommend you to read the paper (Enrichment or depletion of a GO category
+within a class of genes: which test?) for more details
 }
 \examples{
 fetRes <- fisher_exact_test(selected_pathways=c("GO:0007250","GO:0008625"),
