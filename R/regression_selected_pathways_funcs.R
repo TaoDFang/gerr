@@ -18,6 +18,7 @@
 #' @param alpha The elasticnet mixing parameter, with \eqn{0~\leq~\alpha~\leq~1}. The penalty is defined as
 #'\eqn{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1}.
 #'alpha=1 is the lasso penalty, and alpha=0 the ridge penalty. Default value: 0.5.
+#' @param family Response type, currently \code{gaussian} and \code{binomial} are supported. Future extensions are likely.
 #' @param ... Other paramaters for glmnet function.
 #' @return  A list of four elements:
 #' \itemize{
@@ -34,55 +35,62 @@
 #'   "HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1","REL","TNIP2",
 #'   "TUBB6","MAP3K8"),
 #'  gene_pathway_matrix=NULL,lambda=0.007956622,alpha=0.5)
-regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=0.5,...){
-  addi_args=list(...)
+regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=0.5,
+                                      family=c("gaussian", "binomial"),
+                                      ...){
+  family <- match.arg(family)
   if(is.null(gene_pathway_matrix)){
-     gene_pathway_matrix <- mydata("gene_pathway_matrix", "GENEMABR")
-   }
+    gene_pathway_matrix <- mydata("gene_pathway_matrix", "GENEMABR")
+  }
 
   all_genes=rownames(gene_pathway_matrix)
   all_pathways=colnames(gene_pathway_matrix)
-
-  module_labels=rep(0,length(all_genes))          #len:20244F
+  
+  module_labels=rep(0,length(all_genes))
   names(module_labels)=all_genes
   module_common_genes=intersect(all_genes,gene_input)
 
-  if(length(module_common_genes)>1){
-    module_labels[module_common_genes]=1
-    if(addi_args['family']=="binomial" || addi_args['family']=="multinomial"){
-        module_labels = factor(module_labels)
-    }
-    # if(length(addi_args)==0){
-    #   cvfit=glmnet(gene_pathway_matrix,module_labels,lambda = lambda,alpha =alpha,...)
-    # }else{
-    #   cvfit=glmnet(gene_pathway_matrix,module_labels,alpha =alpha,...)
-    # }
-    cvfit=cv.glmnet(gene_pathway_matrix,module_labels,alpha =alpha,...)
-    ## print(cvfit$lambda.min)
-    coef=coef(cvfit, s = "lambda.min")
-    non0index=coef@i[-1]   #remove intercept
-    non0coef=coef@x[-1]
-    selected_index=non0index[which(non0coef>0)]
-    selected_pathways=all_pathways[selected_index]
-    selected_coef=non0coef[which(non0coef>0)]
-    names(selected_coef)=selected_pathways
-
-    if(length(selected_pathways)>0){
-      fisher_exact_test_results=fisher_exact_test(selected_pathways,module_common_genes,gene_pathway_matrix=NULL )
-      selected_pathways_fisher_pvalue=fisher_exact_test_results$selected_pathways_fisher_pvalue
-      selected_pathways_num_genes=fisher_exact_test_results$selected_pathways_num_genes
-
-      new_order=order(selected_coef,decreasing = TRUE)
-
-      return(list(selected_pathways_names=from_id2name(selected_pathways=names(selected_coef[new_order])),
-                  selected_pathways_coef=selected_coef[new_order],
-                  selected_pathways_fisher_pvalue=selected_pathways_fisher_pvalue[new_order],
-                  selected_pathways_num_genes=selected_pathways_num_genes[new_order]
-                  ))
-    }else{
-      return(NULL)}
+  if(length(module_common_genes)<=1) {
+    warning("Not enough genes in the set of genes of interest. NULL is returned")
+    return(NULL)
   }
-
+  
+  module_labels[module_common_genes]=1
+  if(family=="binomial"){
+    module_labels = factor(module_labels)
+    lambda <- NULL
+  } else if (family=="gaussian") {
+    lambda <- c(0.007956622,0.01)
+  }
+  
+  cvfit=cv.glmnet(gene_pathway_matrix,module_labels,alpha =alpha, 
+                  family=family, lambda=lambda, ...)
+  
+  coef=coef(cvfit, s = "lambda.min")
+  non0index=coef@i[-1]   #remove intercept
+  non0coef=coef@x[-1]
+  selected_index=non0index[which(non0coef>0)]
+  selected_pathways=all_pathways[selected_index]
+  selected_coef=non0coef[which(non0coef>0)]
+  names(selected_coef)=selected_pathways
+  
+  if(length(selected_pathways)>0){
+    fisher_exact_test_results=fisher_exact_test(selected_pathways,module_common_genes,gene_pathway_matrix=NULL )
+    selected_pathways_fisher_pvalue=fisher_exact_test_results$selected_pathways_fisher_pvalue
+    selected_pathways_num_genes=fisher_exact_test_results$selected_pathways_num_genes
+    
+    new_order=order(selected_coef,decreasing = TRUE)
+    
+    res <- list(selected_pathways_names=from_id2name(selected_pathways=names(selected_coef[new_order])),
+                selected_pathways_coef=selected_coef[new_order],
+                selected_pathways_fisher_pvalue=selected_pathways_fisher_pvalue[new_order],
+                selected_pathways_num_genes=selected_pathways_num_genes[new_order],
+                model=cvfit)
+    return(res)
+  } else {
+    warning("No selected gene-sets with the given parameter set. NULL is returned.")
+    return(NULL)
+  }
 }
 
 
