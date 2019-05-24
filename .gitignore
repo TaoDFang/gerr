@@ -5,5 +5,8 @@ GENEMABR.Rproj
 .DS_Store
 *.swp
 
+*.log
+*.pdf
+
 doc
 Meta
