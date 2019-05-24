@@ -3,5 +3,7 @@
 GENEMABR.Rproj
 *.rda
 .DS_Store
+*.swp
+
 doc
 Meta
