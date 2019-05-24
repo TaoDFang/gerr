@@ -5,7 +5,7 @@
 \title{regression_selected_pathways}
 \usage{
 regression_selected_pathways(gene_input, gene_pathway_matrix = NULL,
-  lambda = 0.007956622, alpha = 0.5, ...)
+  alpha = 0.5, ...)
 }
 \arguments{
 \item{gene_input}{A vecor of genes to be annotated. It should have same ID types(Ensembl ID, HUGO gene symbol)
@@ -19,16 +19,16 @@ Users could leave it as default value then  it will use pre-collected gene_pathw
 REACTOME databaase.
 Otherwise, they could use their own customized gene_pathway_matrix}
 
-\item{lambda}{We use glmnet function to do regression. \emph{lambda} is an argument in \strong{glmnet}.
-See \strong{glmnet} function for more details
-Here we use default value 0.007956622 after preliminary study. It can be overridden by giving \emph{nlambda}
-and \emph{lambda.min.ratio arguments}.}
-
 \item{alpha}{The elasticnet mixing parameter, with \eqn{0~\leq~\alpha~\leq~1}. The penalty is defined as
 \eqn{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1}.
 alpha=1 is the lasso penalty, and alpha=0 the ridge penalty. Default value: 0.5.}
 
 \item{...}{Other paramaters for glmnet function.}
+
+\item{lambda}{We use glmnet function to do regression. \emph{lambda} is an argument in \strong{glmnet}.
+See \strong{glmnet} function for more details
+Here we use default value 0.007956622 after preliminary study. It can be overridden by giving \emph{nlambda}
+and \emph{lambda.min.ratio arguments}.}
 }
 \value{
 A list of four elements:
