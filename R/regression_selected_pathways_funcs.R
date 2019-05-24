@@ -34,7 +34,7 @@
 #'   "HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1","REL","TNIP2",
 #'   "TUBB6","MAP3K8"),
 #'  gene_pathway_matrix=NULL,lambda=0.007956622,alpha=0.5)
-regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,lambda=0.007956622,alpha=0.5,...){
+regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=0.5,...){
   addi_args=list(...)
   if(is.null(gene_pathway_matrix)){
      gene_pathway_matrix <- mydata("gene_pathway_matrix", "GENEMABR")
@@ -49,11 +49,18 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,lambda
 
   if(length(module_common_genes)>1){
     module_labels[module_common_genes]=1
-    if(length(addi_args)==0){
-      cvfit=glmnet(gene_pathway_matrix,module_labels,lambda = lambda,alpha =alpha,...)
-    }else{
-      cvfit=glmnet(gene_pathway_matrix,module_labels,alpha =alpha,...)
+    if(addi_args['family']=="binomial" || addi_args['family']=="multinomial"){
+        #print("yes my lord")
+        #print(module_labels)
+        module_labels=as.factor(module_labels)
     }
+    # if(length(addi_args)==0){
+    #   cvfit=glmnet(gene_pathway_matrix,module_labels,lambda = lambda,alpha =alpha,...)
+    # }else{
+    #   cvfit=glmnet(gene_pathway_matrix,module_labels,alpha =alpha,...)
+    # }
+    cvfit=cv.glmnet(gene_pathway_matrix,module_labels,alpha =alpha,...)
+    print(cvfit$lambda.min)
     coef=coef(cvfit, s = "lambda.min")
     non0index=coef@i[-1]   #remove intercept
     non0coef=coef@x[-1]

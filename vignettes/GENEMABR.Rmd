@@ -124,7 +124,11 @@ gene_list=c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50","RELB"
 #Here use regression_selected_pathways with default gene pathway matrix 
 #and set the alpha value as 0.5
 enrichment_results=regression_selected_pathways(gene_input=gene_list,
-                                                gene_pathway_matrix=NULL,alpha=0.5)
+                                                gene_pathway_matrix=NULL,alpha=0.5,lambda=c(0.007956622,0.01))
+enrichment_results
+
+enrichment_results=regression_selected_pathways(gene_input=gene_list,family="binomial",
+                                gene_pathway_matrix=NULL,alpha=0.1,lambda=seq(0.001,0.1,0.001))
 enrichment_results
 ```
 From results above, we can find our methods give a much more sparse while biological meaning results.It captures most important NF-kappaB signaling pathways from the gene module
@@ -152,6 +156,43 @@ step2root
 # To view specic position of GO/REACOTEM pathways in ontology trees.
 # You can use Visualization tool at https://www.ebi.ac.uk/QuickGO/ 
 # and https://reactome.org/PathwayBrowser/ 
+```
+
+# simulation study
+```{r}
+go_list <- readRDS("~/Documents/DreamChallengeModuleAnnotation/HPC_Disease_module_identification_DREAM_change/go_list.rds")
+go_list_names=as.character(from_id2name(names(go_list)))
+go_list_ordered=go_list[order(go_list_names)]
+
+#GO:0006958 complement activation, classical pathway, 
+#GO:0030449 regulation of complement activation
+#GO:0038095 Fc-epsilon receptor signaling pathway
+a=go_list[["GO:0006958"]]
+b=go_list[["GO:0030449"]]
+c=go_list[["GO:0038095"]]
+
+length(intersect(a,b))
+length(intersect(a,c))
+length(intersect(b,c))
+
+enrichment_results=regression_selected_pathways(gene_input=c(a,b,c),
+                                                gene_pathway_matrix=NULL,alpha=0.5)
+
+enrichment_results
+
+# miminal required genes for successful retreat
+
+test=regression_selected_pathways(gene_input=c,
+                                                gene_pathway_matrix=NULL,alpha=0.5)
+test_ranks=c()
+for(i in round((0.05*length(c))):length(c)){
+    test=regression_selected_pathways(gene_input=c,
+                                                gene_pathway_matrix=NULL,alpha=0.5)
+    test_ranks=c(test_ranks,match("GO:0038095",names(test$selected_pathways_coef)))
+}
+
+
+
 ```
 
 
