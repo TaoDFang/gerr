@@ -69,7 +69,8 @@ from GO Ontology and REACTOME database by using the non-central hypergeometric d
 Read non-central hypergeometric distribution test results from original paper 
 for gene module based on GO Ontology and REACTOME pathways
 ```{r}
-hypergeometric_test_results=read.csv(file = "../inst/data_raw/Daniel_S5_mod283.txt",
+hyperfile <- system.file("data_raw/Daniel_S5_mod283.txt", package="GENEMABR")
+hypergeometric_test_results=read.csv(file = hyperfile,
                                      header = TRUE,sep = "\t")
 #filterd results with only P.noncentral value less then 0.05
 results_filtered=hypergeometric_test_results[hypergeometric_test_results$P.noncentral<0.05,]
@@ -124,7 +125,8 @@ gene_list=c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50","RELB"
 #Here use regression_selected_pathways with default gene pathway matrix 
 #and set the alpha value as 0.5
 enrichment_results=regression_selected_pathways(gene_input=gene_list,
-                                                gene_pathway_matrix=NULL,alpha=0.5,lambda=c(0.007956622,0.01))
+                                                gene_pathway_matrix=NULL,alpha=0.5, family="gaussian", 
+                                                lambda=c(0.007956622,0.01))
 enrichment_results
 
 enrichment_results=regression_selected_pathways(gene_input=gene_list,family="binomial",
@@ -159,7 +161,7 @@ step2root
 ```
 
 # simulation study
-```{r}
+```{r, eval=FALSE}
 go_list <- readRDS("~/Documents/DreamChallengeModuleAnnotation/HPC_Disease_module_identification_DREAM_change/go_list.rds")
 go_list_names=as.character(from_id2name(names(go_list)))
 go_list_ordered=go_list[order(go_list_names)]
