@@ -26,14 +26,9 @@ alpha=1 is the lasso penalty, and alpha=0 the ridge penalty. Default value: 0.5.
 
 \item{family}{Response type, currently \code{gaussian} and \code{binomial} are supported. Future extensions are likely.}
 
-\item{lambda}{We use glmnet function to do regression. \emph{lambda} is an argument in \strong{glmnet}.
-See \strong{glmnet} function for more details
-Here we use default value 0.007956622 after preliminary study. It can be overridden by giving \emph{nlambda}
-and \emph{lambda.min.ratio arguments}.}
+\item{lambda}{A user supplied lambda sequence, see \code{\link{glmnet}} and use with care.}
 
 \item{...}{Other paramaters for glmnet function.}
-
-\item{lambda}{A user supplied lambda sequence, see \code{\link{glmnet}} and use with care.}
 }
 \value{
 A list of following elements:
