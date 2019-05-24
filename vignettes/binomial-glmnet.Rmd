@@ -20,12 +20,14 @@ library(GENEMABR)
 gene_list <- c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50","RELB",
            "TNFAIP3","NFKBIB","HSPA1A","NFKBIE","SPAG9",
            "NFKB2","ERLIN1","REL","TNIP2","TUBB6","MAP3K8")
+set.seed(1887)
 gaussRes <- regression_selected_pathways(gene_input=gene_list, alpha=0.5, family="gaussian")
 gaussRes
 ```
 
 
 ```{r binomFit}
+set.seed(1887)
 binomRes <- regression_selected_pathways(gene_input=gene_list,family="binomial",alpha=0.5)
 binomRes
 ```
