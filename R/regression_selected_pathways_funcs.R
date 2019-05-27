@@ -14,9 +14,9 @@
 #' @param alpha The elasticnet mixing parameter, with \eqn{0~\leq~\alpha~\leq~1}. The penalty is defined as
 #'\eqn{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1}.
 #'alpha=1 is the lasso penalty, and alpha=0 the ridge penalty. Default value: 0.5.
-#' @param family Response type, currently \code{gaussian} and \code{binomial} are supported. Future extensions are likely.
+#' @param family Response type, currently \code{gaussian} and \code{binomial} are supported and the gaussian family is the default. Future extensions are likely.
 #' @param lambda A user supplied lambda sequence, see \code{\link{glmnet}} and use with care.
-#' @param ... Other paramaters for glmnet function.
+#' @param ... Other paramaters passed to the \code{\link{cv.glmnet}} function.
 #' @return  A list of following elements:
 #' \itemize{
 #'   \item selected_pathways_names - Pathways names for selected pathways
@@ -24,6 +24,8 @@
 #'   \item selected_pathways_fisher_pvalue - Fisher exact pvalue for selected pathways
 #'   \item selected_pathways_num_genes - The number of genes for selected pathways in background
 #'   \item model - the trained glmnet model
+#'   \item x - independent variable
+#'   \item y - dependent variable
 #' }
 #' @importFrom glmnet glmnet cv.glmnet
 #' @export
@@ -41,38 +43,32 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
     gene_pathway_matrix <- mydata("gene_pathway_matrix", "GENEMABR")
   }
 
-  all_genes=rownames(gene_pathway_matrix)
-  all_pathways=colnames(gene_pathway_matrix)
+  all_genes <- rownames(gene_pathway_matrix)
+  all_pathways <- colnames(gene_pathway_matrix)
   
-  module_labels=rep(0,length(all_genes))
-  names(module_labels)=all_genes
-  module_common_genes=intersect(all_genes,gene_input)
-  module_labels[module_common_genes]=1
+  module_labels <- integer(length(all_genes))
+  names(module_labels) <- all_genes
+  module_common_genes <- intersect(all_genes,gene_input)
+  module_labels[module_common_genes] <- 1
   
   if(length(module_common_genes)<=1) {
     warning("Not enough genes in the set of genes of interest. NULL is returned")
     return(NULL)
   }
   
-  if (family=="gaussian" && is.null(lambda)) {
- ##   lambda <- c(0.007956622,0.01)
-    type.measure <- "deviance"
-  } else if (family=="binomial") {
-    type.measure <- "class" 
-  }
-  
-  cvfit=cv.glmnet(gene_pathway_matrix,
+  cvfit <- cv.glmnet(gene_pathway_matrix,
                   module_labels,alpha =alpha, 
-                  family=family, lambda=lambda, type.measure=type.measure,
-                  lower.limits=0, ...)
+                  family=family, lambda=lambda,
+                  lower.limits=0, 
+                  ...)
   
-  coef=coef(cvfit, s = "lambda.min")
-  non0index=coef@i[-1]   #remove intercept
-  non0coef=coef@x[-1]
-  selected_index=non0index[which(non0coef>0)]
-  selected_pathways=all_pathways[selected_index]
-  selected_coef=non0coef[which(non0coef>0)]
-  names(selected_coef)=selected_pathways
+  coef <- coef(cvfit, s = "lambda.min")
+  non0index <- coef@i[-1]   #remove intercept
+  non0coef <- coef@x[-1]
+  selected_index <- non0index[which(non0coef>0)]
+  selected_pathways <- all_pathways[selected_index]
+  selected_coef <- non0coef[which(non0coef>0)]
+  names(selected_coef) <- selected_pathways
   
   if(length(selected_pathways)>0){
     fisher_exact_test_results=fisher_exact_test(selected_pathways,module_common_genes,gene_pathway_matrix=NULL )
