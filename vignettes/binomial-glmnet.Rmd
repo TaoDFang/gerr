@@ -83,7 +83,7 @@ length(binomRes$selected_pathways_names)
 
 ### Visualization of the feature-seletion process
 
-```{r binomPlot
+```{r binomPlot}
 plot(binomRes$model)
 ```
 
