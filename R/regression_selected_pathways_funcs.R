@@ -59,7 +59,7 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
   cvfit <- cv.glmnet(gene_pathway_matrix,
                   module_labels,alpha =alpha, 
                   family=family, lambda=lambda,
-                  lower.limits=0, 
+                  lower.limits=0,
                   ...)
   
   coef <- coef(cvfit, s = "lambda.min")
