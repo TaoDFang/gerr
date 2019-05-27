@@ -14,7 +14,8 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE,
                       message=FALSE)
 library(GENEMABR) 
-```
+library(glmnet)
+```  
 
 ```{r gaussianFit}
 gene_list <- c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50","RELB",
@@ -22,13 +23,34 @@ gene_list <- c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50","RE
            "NFKB2","ERLIN1","REL","TNIP2","TUBB6","MAP3K8")
 set.seed(1887)
 gaussRes <- regression_selected_pathways(gene_input=gene_list, alpha=0.5, family="gaussian")
-gaussRes
+gaussRes$selected_pathways_names
 ```
 
+```{r}
+plot(gaussRes$model)
+```
+
+The behaviour is strange: how can it be that more features (gene-sets in this case) lead to higher prediction error?
+
+```{r gaussPredict}
+gaussPred <- predict(gaussRes$model, newx=gaussRes$x, s="lambda.min")
+table(gaussPred, gaussRes$y)
+```
+
+```{r gaussDomGenes}
+## genes that drive the prediction using the Gaussian model
+## they are apparently NF-kB relevant genes
+rownames(gaussRes$x)[which(gaussPred>0.12 & gaussRes$y==1)]
+```
 
 ```{r binomFit}
 set.seed(1887)
 binomRes <- regression_selected_pathways(gene_input=gene_list,family="binomial",alpha=0.5)
-binomRes
+length(binomRes$selected_pathways_names)
+plot(binomRes$model)
+```
+
+```{r binomial}
+data(BinomialExample)
 ```
 
