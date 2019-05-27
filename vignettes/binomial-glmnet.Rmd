@@ -46,7 +46,7 @@ I believe that this is due to the dichotomy nature of both dependent and indepen
 
 ### Identifying the leading-edge genes
 
-By comparing the predicted \code{y} value (GOI membership) with the observed values, we notice that the prediction is far from perfect. Given the sparsity of the GOI membership (~1/1000), the model is supported by a few genes within GOI while many other genes within GOI are wrongly predicted to have the same response variable as genes out of GOI.
+By comparing the predicted `y` value (GOI membership) with the observed values, we notice that the prediction is far from perfect. Given the sparsity of the GOI membership (~1/1000), the model is supported by a few genes within GOI while many other genes within GOI are wrongly predicted to have the same response variable as genes out of GOI.
 
 ```{r gaussPredict}
 gaussPred <- predict(gaussRes$model, newx=gaussRes$x, s="lambda.min")
@@ -114,7 +114,7 @@ rownames(binomRes$x)[which(binomPred>(-3) & binomRes$y==0)]
 
 ## Conclusions
 
-In this document, we compare the results of regularized linear regression and those of regularized logistic regression. We note that the linear regression provides stable solutions that are comparable with the results of regularized logistic regression. Therefore, for the implementation of the \code{gerr} package, we use the cross-validation version of the elastic net using the  \code{gaussian} family (linear regression) as the default, though the \code{binomial} family can be specified by the user as well.
+In this document, we compare the results of regularized linear regression and those of regularized logistic regression. We note that the linear regression provides stable solutions that are comparable with the results of regularized logistic regression. Therefore, for the implementation of the `gerr` package, we use the cross-validation version of the elastic net using the  `gaussian` family (linear regression) as the default, though the `binomial` family can be specified by the user as well.
 
 ## R session info
 

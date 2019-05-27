@@ -24,11 +24,11 @@ Otherwise, they could use their own customized gene_pathway_matrix}
 \eqn{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1}.
 alpha=1 is the lasso penalty, and alpha=0 the ridge penalty. Default value: 0.5.}
 
-\item{family}{Response type, currently \code{gaussian} and \code{binomial} are supported. Future extensions are likely.}
+\item{family}{Response type, currently \code{gaussian} and \code{binomial} are supported and the gaussian family is the default. Future extensions are likely.}
 
 \item{lambda}{A user supplied lambda sequence, see \code{\link{glmnet}} and use with care.}
 
-\item{...}{Other paramaters for glmnet function.}
+\item{...}{Other paramaters passed to the \code{\link{cv.glmnet}} function.}
 }
 \value{
 A list of following elements:
@@ -38,6 +38,8 @@ A list of following elements:
   \item selected_pathways_fisher_pvalue - Fisher exact pvalue for selected pathways
   \item selected_pathways_num_genes - The number of genes for selected pathways in background
   \item model - the trained glmnet model
+  \item x - independent variable
+  \item y - dependent variable
 }
 }
 \description{
