@@ -47,21 +47,24 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
   module_labels=rep(0,length(all_genes))
   names(module_labels)=all_genes
   module_common_genes=intersect(all_genes,gene_input)
-
+  module_labels[module_common_genes]=1
+  
   if(length(module_common_genes)<=1) {
     warning("Not enough genes in the set of genes of interest. NULL is returned")
     return(NULL)
   }
   
-  module_labels[module_common_genes]=1
-  if(family=="binomial"){
-    module_labels = factor(module_labels, levels=c(0,1))
-  } else if (family=="gaussian" && is.null(lambda)) {
-    lambda <- c(0.007956622,0.01)
+  if (family=="gaussian" && is.null(lambda)) {
+ ##   lambda <- c(0.007956622,0.01)
+    type.measure <- "deviance"
+  } else if (family=="binomial") {
+    type.measure <- "class" 
   }
   
-  cvfit=cv.glmnet(gene_pathway_matrix,module_labels,alpha =alpha, 
-                  family=family, lambda=lambda, ...)
+  cvfit=cv.glmnet(gene_pathway_matrix,
+                  module_labels,alpha =alpha, 
+                  family=family, lambda=lambda, type.measure=type.measure,
+                  lower.limits=0, ...)
   
   coef=coef(cvfit, s = "lambda.min")
   non0index=coef@i[-1]   #remove intercept
@@ -82,12 +85,17 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
                 selected_pathways_coef=selected_coef[new_order],
                 selected_pathways_fisher_pvalue=selected_pathways_fisher_pvalue[new_order],
                 selected_pathways_num_genes=selected_pathways_num_genes[new_order],
-                model=cvfit)
-    return(res)
+                model=cvfit, 
+                x=gene_pathway_matrix,
+                y=module_labels)
+
   } else {
     warning("No selected gene-sets with the given parameter set. NULL is returned.")
-    return(NULL)
+    res <- list(model=cvfit, 
+                x=gene_pathway_matrix,
+                y=module_labels)
   }
+  return(res)
 }
 
 
