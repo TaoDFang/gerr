@@ -40,7 +40,7 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
                                       ...){
   family <- match.arg(family)
   if(is.null(gene_pathway_matrix)){
-    gene_pathway_matrix <- mydata("gene_pathway_matrix", "GENEMABR")
+    gene_pathway_matrix <- mydata("gene_pathway_matrix", "gerr")
   }
 
   all_genes <- rownames(gene_pathway_matrix)
