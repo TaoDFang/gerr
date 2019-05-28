@@ -12,6 +12,7 @@ vignette: >
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(tinytex.verbose = TRUE)
 ```
 
 # Introduction
@@ -72,7 +73,8 @@ hyperfile <- system.file("data_raw/Daniel_S5_mod283.txt", package="gerr")
 hypergeometric_test_results=read.csv(file = hyperfile,
                                      header = TRUE,sep = "\t")
 #filterd results with only P.noncentral value less then 0.05
-results_filtered=hypergeometric_test_results[hypergeometric_test_results$P.noncentral<0.05,]
+isSig <- hypergeometric_test_results$P.noncentral<0.05
+results_filtered=hypergeometric_test_results[isSig,]
 
 head(results_filtered)
 dim(results_filtered)
@@ -103,9 +105,9 @@ To use this method, use need to provide a binary gene pathways realationships
 matrix whose columns are the pathways/gene sets and whose rows are all the genes 
 from pathways/gene sets.For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j, otherwise 0.
 
-Users could use default gene_pathway_matrix  so it will use pre-collected 
-gene_pathway_matrix from GO Ontology and REACTOME databaase. Altertatively, Users 
-could use their own customized gene_pathway_matrix.
+Users could use default gene_pathway_matrix  so it will use pre-collected gene_pathway_matrix from GO Ontology and REACTOME databaase. Altertatively, Users could use their own customized gene_pathway_matrix.
+
+The step below constructs a regularized linear regression model, using a pretrained lambda value `pretrained_gaussian_lambda`.
 
 ```{r enrichment}
 #Gene module from the paper
@@ -118,15 +120,19 @@ gene_list=c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50","RELB"
 #and set the alpha value as 0.5
 enrichment_results=regression_selected_pathways(gene_input=gene_list,
                                                 gene_pathway_matrix=NULL,alpha=0.5, family="gaussian", 
-                                                lambda=c(0.007956622,0.01))
-enrichment_results
-
-enrichment_results=regression_selected_pathways(gene_input=gene_list,family="binomial",
-                                gene_pathway_matrix=NULL,alpha=0.1,lambda=seq(0.001,0.1,0.001))
-enrichment_results
+                                                lambda=pretrained_gaussian_lambda)
+enrichment_results$selected_pathways_names
 ```
 
-From results above, we can find our methods give a much more sparse while biological meaning results.It captures most important NF-kappaB signaling pathways from the gene module.
+A regularized binomial model can be alternatively constructed. Here is an example.
+
+```{r binomialResults}
+binomRes <- regression_selected_pathways(gene_input=gene_list,family="binomial",
+                                gene_pathway_matrix=NULL,alpha=0.1,lambda=seq(0.001,0.1,0.001))
+binomRes$selected_pathways_names
+```
+
+The results suggest that regularized regression returns a much more sparse while biological meaning results. It captures most important NF-kappaB signaling pathways from the gene module.
 
 Currently, both `gaussian` (linear model) and `binomial` (logistic model) families are supported, with `gaussian` as the default parameter. See the vignette *comparing linear versus logistic regression with gerr* for more information about this.
 
@@ -156,7 +162,7 @@ step2root
 # and https://reactome.org/PathwayBrowser/ 
 ```
 
-# Simulation study
+# A simulation study
 
 ```{r simulation, eval=FALSE}
 go_list <- readRDS("~/Documents/DreamChallengeModuleAnnotation/HPC_Disease_module_identification_DREAM_change/go_list.rds")
@@ -189,9 +195,6 @@ for(i in round((0.05*length(c))):length(c)){
                                                 gene_pathway_matrix=NULL,alpha=0.5)
     test_ranks=c(test_ranks,match("GO:0038095",names(test$selected_pathways_coef)))
 }
-
-
-
 ```
 
 # Session Information
