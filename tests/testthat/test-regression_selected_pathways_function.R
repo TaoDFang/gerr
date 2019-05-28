@@ -1,4 +1,4 @@
-library(GENEMABR)
+library(gerr)
 library(glmnet)
 library(Matrix)
 
