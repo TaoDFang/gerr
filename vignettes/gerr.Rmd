@@ -1,12 +1,12 @@
 ---
-title: "GENEMABR_PDF"
-author: "Tao Fang, Daniel Marbach and Jitao David Zhang"
-date: "4/28/2019"
+title: "Gene-set enrichment with regularized regression: comparing linear versus logistic regression"
+author: "Tao Fang and Jitao David Zhang"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output:
     BiocStyle::pdf_document:
         toc: true
 vignette: >
-    %\VignetteIndexEntry{GENEMABR_PDF}
+    %\VignetteIndexEntry{Gene-set enrichment with reguarlized regression}
     %\VignetteEngine{knitr::rmarkdown}
 ---
 
@@ -15,61 +15,60 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Introduction
-GENEMABR is  an R package for gene module annotation or gene set enrichment 
-analysis via a regression based method.
 
-We formulate the gene set enrichment problem within a regression framework. 
+`gerr` is an R package for gene-set enrichment with reguarlized regression.
+
+We formulate the gene set enrichment problem within a regularized regression framework. 
 Thus, the problem of gene-set enrichment is transformed into a feature 
-selection problem, where the aim is to select the gene sets that best predict
-the membership of genes in a given gene set/module. 
+selection problem, where the aim is to select the gene-sets that best predict
+the membership of genes in a given set of genes of interest. 
 
-Here we propose to apply regularised regression methods, such as lasso 
-(l1 regularization),ridge (l2 regularization), or elastic net (hybrid of 
+We propose to apply regularized regression methods, such as lasso 
+(l1 regularization),ridge (l2 regularization), or elastic net (a hybrid of 
 l1 and l2 regularization controlled by the hyperparameter alpha), in order to
 adjust the treatment of similar or redundant gene sets.
 
-For more details about this method. Please refer to out paper:(?)
- 
+For more details about this method. Please refer to out manuscript on bioarxiv.
 
 # Installation
-GENEMABR can be installed from Bioconductor:
-```{r, eval= FALSE}
+
+`gerr` can be installed from Bioconductor:
+```{r install, eval= FALSE}
 if (!requireNamespace("BiocManager", quietly=TRUE)){
     install.packages("BiocManager")}
-BiocManager::install("GENEMABR")
+BiocManager::install("gerr")
 ```
 
 
 The package can be loaded using the `library` command.
 
-```{r, eval=TRUE, message=FALSE} 
-library(GENEMABR)
+```{r load, eval=TRUE, message=FALSE} 
+library(gerr)
 ```
 
 To see the latest updates and releases or to post a bug, see our GitHub page 
-at https://github.com/TaoDFang/GENEMABR. 
+at https://github.com/TaoDFang/gerr. 
 
-To ask questions about running GENEMABR, plase create issures 
-at https://github.com/TaoDFang/GENEMABR/issues
+To ask questions or post issues about `gerr`, plase create issures 
+at https://github.com/TaoDFang/gerr/issues
 
 # Gene module annotation or gene set enrichment analysis via regression based method 
-To test a our method, we use a IgAN-associated module from the paper: 
-Choobdar,S. et al. (2019) Open Community Challenge Reveals Molecular Network Modules with Key Roles in Diseases. bioRxiv,
-265553.
 
-IgAN-associated module identified using the consensus analysis in the InWeb 
-protein-protein interaction network. The module comprises immune-related NF-$\kappa$B signaling pathways.
+To test a our method, we use a consensus module from the paper: 
+Choobdar,S. et al. (2019) Open Community Challenge Reveals Molecular Network Modules with Key Roles in Diseases. bioRxiv, 265553.
 
-Figure below shows mannually extracted P-values for some important  pathways
-from GO Ontology and REACTOME database by using the non-central hypergeometric distribution test. 
+This module is associated with IgAN and was identified using the consensus analysis in the InWeb 
+protein-protein interaction network. The module consists of immune-related NF-$\kappa$B signaling pathways.
+
+Figure below shows mannually extracted P-values for signficantly enriched pathways from GO Ontology and REACTOME database by using the non-central hypergeometric distribution test. 
 
 ![](../inst/figures/figureS5module283.png)
 
 
-Read non-central hypergeometric distribution test results from original paper 
-for gene module based on GO Ontology and REACTOME pathways
-```{r}
-hyperfile <- system.file("data_raw/Daniel_S5_mod283.txt", package="GENEMABR")
+Read non-central hypergeometric distribution test results from original paper  for gene module based on GO Ontology and REACTOME pathways
+
+```{r Fisher}
+hyperfile <- system.file("data_raw/Daniel_S5_mod283.txt", package="gerr")
 hypergeometric_test_results=read.csv(file = hyperfile,
                                      header = TRUE,sep = "\t")
 #filterd results with only P.noncentral value less then 0.05
@@ -79,43 +78,36 @@ head(results_filtered)
 dim(results_filtered)
 ```
 
-We found traditional non-central hypergeometric distribution test/fisher extact test 
-usually return too much over-presented pathways for certain gene module. 
+We found that the traditional non-central hypergeometric distribution test/fisher extact test 
+usually returns a long list of over-presented pathways for certain gene module. Many of these pathways are either redundant or closely related. For example, herea are four pathways with p-values less than 0.05: 
 
-And many of  these pathways are highly related.
-For example,four pathways with pvalues less than 0.05: 
+* immune response-activating cell surface receptor signaling pathway (GO:0002429);
+* immune response-activating signal transduction (GO:0002757);
+* immune response-regulating cell surface receptor signaling pathway (GO:0002768);
+* immune response-regulating signaling pathway (GO:0002764).
 
-immune response-activating cell surface receptor signaling pathway  GO:0002429;
-
-immune response-activating signal transduction GO:0002757 ;
-
-immune response-regulating cell surface receptor signaling pathway GO:0002768;
-
-immune response-regulating signaling pathway: GO:0002764.
-
-[GO:0002757 and GO:0002768 are parents of GO:0002429 and GO:0002764 is parents of GO:0002757 and GO:0002768 ](https://www.ebi.ac.uk/QuickGO/term/GO:0002429)
-
+We note that [GO:0002757 and GO:0002768 are parents of GO:0002429, and GO:0002764 is parent of GO:0002757 and GO:0002768 ](https://www.ebi.ac.uk/QuickGO/term/GO:0002429)
 
 To get a more sparse results by exploting corraltion between different pathways,
-we could use "regression_selected_pathways" function in GENEMABR package.
+we could use the "regression_selected_pathways" function in `gerr` package.
 
-This function use regularised regression methods to do enrichment analysis, 
-such as lasso (l1 regularization), ridge (l2 regularization), or elastic net 
-(hybrid of l1 and l2 regularization controlled by the hyperparameter alpha), 
-in order to adjust the treatment of similar or redundant gene-sets. 
+
+This function use regularized regression methods to do enrichment analysis, 
+more specifically, the elastic net model, a hybrid of l1 and l2 regularization controlled by the hyperparameter $\alpha$, in the current implementation in order to adjust the treatment of similar or redundant gene-sets. 
+
 If two gene-sets are highly redundant, lasso will assign a higher coefficient 
 to one of them randomly, ridge will assign equal coefficients to both of them,
 whereas elastic net will behave between lasso and ridge.
 
 To use this method, use need to provide a binary gene pathways realationships 
 matrix whose columns are the pathways/gene sets and whose rows are all the genes 
-from pathways/gene sets.For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j 
-otherwise 0.
+from pathways/gene sets.For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j, otherwise 0.
 
-Users could use default gene_pathway_matrix("default") so it will use pre-collected 
-gene_pathway_matrix from GO Ontology and REACTOME databaase.Altertatively, Users 
-could use their own customized gene_pathway_matrix 
-```{r}
+Users could use default gene_pathway_matrix  so it will use pre-collected 
+gene_pathway_matrix from GO Ontology and REACTOME databaase. Altertatively, Users 
+could use their own customized gene_pathway_matrix.
+
+```{r enrichment}
 #Gene module from the paper
 gene_list=c("TRPC4AP","CDC37","TNIP1","IKBKB","NKIRAS2","NFKBIA","TIMM50","RELB",
             "TNFAIP3","NFKBIB","HSPA1A","NFKBIE","SPAG9",
@@ -133,10 +125,14 @@ enrichment_results=regression_selected_pathways(gene_input=gene_list,family="bin
                                 gene_pathway_matrix=NULL,alpha=0.1,lambda=seq(0.001,0.1,0.001))
 enrichment_results
 ```
-From results above, we can find our methods give a much more sparse while biological meaning results.It captures most important NF-kappaB signaling pathways from the gene module
 
-# Other functions in this methods
-```{r}
+From results above, we can find our methods give a much more sparse while biological meaning results.It captures most important NF-kappaB signaling pathways from the gene module.
+
+Currently, both `gaussian` (linear model) and `binomial` (logistic model) families are supported, with `gaussian` as the default parameter. See the vignette *comparing linear versus logistic regression with gerr* for more information about this.
+
+# Other functions
+
+```{r tree}
 # If you use the default pathway databases(GO Ontologyand REACTOME).
 # After you extracted enriched pathways, you can use find_root_ids function
 #to find thier GO sub-root or REACTOME roots(ID) to help you better
@@ -160,8 +156,9 @@ step2root
 # and https://reactome.org/PathwayBrowser/ 
 ```
 
-# simulation study
-```{r, eval=FALSE}
+# Simulation study
+
+```{r simulation, eval=FALSE}
 go_list <- readRDS("~/Documents/DreamChallengeModuleAnnotation/HPC_Disease_module_identification_DREAM_change/go_list.rds")
 go_list_names=as.character(from_id2name(names(go_list)))
 go_list_ordered=go_list[order(go_list_names)]
@@ -197,8 +194,8 @@ for(i in round((0.05*length(c))):length(c)){
 
 ```
 
-
 # Session Information
-```{r}
+
+```{r sessionInfo}
 sessionInfo()
 ```
