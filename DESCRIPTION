@@ -1,9 +1,9 @@
 Package: gerr
 Title: Gene-set Enrichment with Regularized Regression
-Version: 0.99.17
+Version: 0.99.18
 Author: Tao Fang and Jitao David Zhang, with inputs from Daniel Marbach
 Maintainer: Tao Fang <talonvonfang@gmail.com>
-Description: Annotate genes of interest with heterogeneous and potentially redundant gene-sets by regularized regression
+Description: The package implements gene-set enrichment wirh regularized regression. The method can be used to annotate any set of genes of interest with heterogeneous and potentially redundant gene-sets.
 Imports: glmnet,
          igraph,
          Matrix,
