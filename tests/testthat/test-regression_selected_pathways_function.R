@@ -25,5 +25,6 @@ test_that("Test regression_selected_pathways", {
     #                                                          "TNFAIP3","NFKBIB","HSPA1A","NFKBIE","SPAG9",
     #                                                          "NFKB2","ERLIN1","REL","TNIP2","TUBB6","MAP3K8"),alpha = 0.5), a)
 
-    expect_equal(regression_selected_pathways(gene_input = c("TRPC4AP","CDC37","TNIP1"),alpha = 1), NULL)
+    ## the following command was commented out because now, even no gene-set is selected, model, x, and y are returned as a list
+    # expect_equal(regression_selected_pathways(gene_input = c("TRPC4AP","CDC37","TNIP1"),alpha = 1), NULL)
 })
