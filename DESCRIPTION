@@ -11,7 +11,7 @@ Imports: glmnet,
 Depends: R (>= 3.5.0)
 biocViews: GeneSetEnrichment,Regression,Pathways,GO, Reactome
 License: Artistic-2.0
-BugReports: https://github.com/TaoDFang/GENEMABR/issues
+BugReports: https://github.com/TaoDFang/gerr/issues
 LazyData: false
 Encoding: UTF-8
 VignetteBuilder: knitr
