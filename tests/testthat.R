@@ -1,4 +1,4 @@
 library(testthat)
-library(GENEMABR)
+library(gerr)
 
-test_check("GENEMABR")
+test_check("gerr")

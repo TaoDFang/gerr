@@ -8,3 +8,5 @@
 
 Makefile
 GeneModuleAnnotation.Rmd
+^doc$
+^Meta$

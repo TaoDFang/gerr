@@ -39,7 +39,7 @@ mydata <- function(objName, package) {
 #'      "REL","TNIP2","TUBB6","MAP3K8"),gene_pathway_matrix=NULL)
 fisher_exact_test=function(selected_pathways,gene_input,gene_pathway_matrix=NULL){
   if(is.null(gene_pathway_matrix)){
-    gene_pathway_matrix=mydata("gene_pathway_matrix", package="GENEMABR")
+    gene_pathway_matrix=mydata("gene_pathway_matrix", package="gerr")
   }
   all_genes=rownames(gene_pathway_matrix)
   module1_common_genes=intersect(all_genes,gene_input)
@@ -79,11 +79,11 @@ fisher_exact_test=function(selected_pathways,gene_input,gene_pathway_matrix=NULL
 #' @examples
 #' find_root_ids(selected_pathways=c("GO:0005834","R-HSA-111469"))
 find_root_ids=function(selected_pathways){
-  go_ontology=mydata("human_go_ontology", package="GENEMABR")
-  go_sub_roots=mydata("human_go_sub_roots", package="GENEMABR")
+  go_ontology=mydata("human_go_ontology", package="gerr")
+  go_sub_roots=mydata("human_go_sub_roots", package="gerr")
   go_sub_roots=unlist(go_sub_roots)
-  reactome_ontology=mydata("human_reactome_ontology", package="GENEMABR")
-  reactome_roots=mydata("human_reactome_roots", package="GENEMABR")
+  reactome_ontology=mydata("human_reactome_ontology", package="gerr")
+  reactome_roots=mydata("human_reactome_roots", package="gerr")
 
   find_roots=lapply(selected_pathways, function(x){
     if(grepl("GO",x)){
@@ -116,8 +116,8 @@ find_root_ids=function(selected_pathways){
 #' @examples
 #' from_id2name((selected_pathways=list(c("GO:0032991#GO:0044425#GO:0044464"),"R-HSA-5357801")))
 from_id2name=function(selected_pathways){
-  go_ontology=mydata("human_go_ontology", package="GENEMABR")
-  reactome_ontology=mydata("human_reactome_ontology", package="GENEMABR")
+  go_ontology=mydata("human_go_ontology", package="gerr")
+  reactome_ontology=mydata("human_reactome_ontology", package="gerr")
 
   go_ontology_names=V(go_ontology)$pathway_names
   names(go_ontology_names)=as_ids(V(go_ontology))
@@ -156,11 +156,11 @@ from_id2name=function(selected_pathways){
 #' @examples
 #' get_steps(selected_pathways=c("GO:0005834","R-HSA-111469"))
 get_steps=function(selected_pathways){
-  go_ontology=mydata("human_go_ontology", package="GENEMABR")
-  go_roots=mydata("human_go_roots", package = "GENEMABR")
+  go_ontology=mydata("human_go_ontology", package="gerr")
+  go_roots=mydata("human_go_roots", package = "gerr")
   go_roots=unlist(go_roots)
-  reactome_ontology=mydata("human_reactome_ontology", package="GENEMABR")
-  reactome_roots=mydata("human_reactome_roots", package="GENEMABR")
+  reactome_ontology=mydata("human_reactome_ontology", package="gerr")
+  reactome_roots=mydata("human_reactome_roots", package="gerr")
 
   steps=lapply(selected_pathways,function(x){
     if(grepl("GO",x)){

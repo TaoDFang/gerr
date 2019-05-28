@@ -1,9 +1,9 @@
-Package: GENEMABR
-Title: Gene module/list annotation
-Version: 0.99.13
+Package: gerr
+Title: Gene-set Enrichment with Regularized Regression
+Version: 0.99.18
 Author: Tao Fang and Jitao David Zhang, with inputs from Daniel Marbach
 Maintainer: Tao Fang <talonvonfang@gmail.com>
-Description: Gene-set module annotation or gene-set enrichment within a regression based framework.
+Description: The package implements gene-set enrichment wirh regularized regression. The method can be used to annotate any set of genes of interest with heterogeneous and potentially redundant gene-sets.
 Imports: glmnet,
          igraph,
          Matrix,
@@ -11,7 +11,7 @@ Imports: glmnet,
 Depends: R (>= 3.5.0)
 biocViews: GeneSetEnrichment,Regression,Pathways,GO, Reactome
 License: Artistic-2.0
-BugReports: https://github.com/TaoDFang/GENEMABR/issues
+BugReports: https://github.com/TaoDFang/gerr/issues
 LazyData: false
 Encoding: UTF-8
 VignetteBuilder: knitr

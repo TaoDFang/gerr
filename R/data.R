@@ -1,3 +1,8 @@
+#' Pretrained lambda values for Gaussian glmnet
+#' @format A vector of numeric values
+#' @export
+pretrained_gaussian_lambda <- c(0.007956622,0.01)
+
 #' Homo sapiens GO ontology tree
 #'@description A rds R object contains GO ontology relationships (tree structure)
 #'@format Directed igraph format

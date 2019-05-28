@@ -1,4 +1,4 @@
-library(GENEMABR)
+library(gerr)
 library(igraph)
 library(Matrix)
 

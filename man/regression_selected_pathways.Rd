@@ -5,7 +5,8 @@
 \title{regression_selected_pathways}
 \usage{
 regression_selected_pathways(gene_input, gene_pathway_matrix = NULL,
-  lambda = 0.007956622, alpha = 0.5, ...)
+  alpha = 0.5, family = c("gaussian", "binomial"), lambda = NULL,
+  ...)
 }
 \arguments{
 \item{gene_input}{A vecor of genes to be annotated. It should have same ID types(Ensembl ID, HUGO gene symbol)
@@ -19,24 +20,26 @@ Users could leave it as default value then  it will use pre-collected gene_pathw
 REACTOME databaase.
 Otherwise, they could use their own customized gene_pathway_matrix}
 
-\item{lambda}{We use glmnet function to do regression. \emph{lambda} is an argument in \strong{glmnet}.
-See \strong{glmnet} function for more details
-Here we use default value 0.007956622 after preliminary study. It can be overridden by giving \emph{nlambda}
-and \emph{lambda.min.ratio arguments}.}
-
 \item{alpha}{The elasticnet mixing parameter, with \eqn{0~\leq~\alpha~\leq~1}. The penalty is defined as
 \eqn{(1-\alpha)/2||\beta||_2^2+\alpha||\beta||_1}.
 alpha=1 is the lasso penalty, and alpha=0 the ridge penalty. Default value: 0.5.}
 
-\item{...}{Other paramaters for glmnet function.}
+\item{family}{Response type, currently \code{gaussian} and \code{binomial} are supported and the gaussian family is the default. Future extensions are likely.}
+
+\item{lambda}{A user supplied lambda sequence, see \code{\link{glmnet}} and use with care.}
+
+\item{...}{Other paramaters passed to the \code{\link{cv.glmnet}} function.}
 }
 \value{
-A list of four elements:
+A list of following elements:
 \itemize{
   \item selected_pathways_names - Pathways names for selected pathways
   \item selected_pathways_coef - Regression coefficients value for selected pathways
   \item selected_pathways_fisher_pvalue - Fisher exact pvalue for selected pathways
   \item selected_pathways_num_genes - The number of genes for selected pathways in background
+  \item model - the trained glmnet model
+  \item x - independent variable
+  \item y - dependent variable
 }
 }
 \description{
@@ -48,5 +51,5 @@ rspResults <- regression_selected_pathways(gene_input=c("TRPC4AP","CDC37",
   "TNIP1","IKBKB","NKIRAS2", "NFKBIA","TIMM50","RELB","TNFAIP3","NFKBIB",
   "HSPA1A","NFKBIE","SPAG9","NFKB2","ERLIN1","REL","TNIP2",
   "TUBB6","MAP3K8"),
- gene_pathway_matrix=NULL,lambda=0.007956622,alpha=0.5)
+ gene_pathway_matrix=NULL,lambda=NULL,alpha=0.5)
 }

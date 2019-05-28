@@ -1,0 +1,157 @@
+---
+title: "Gene-set enrichment with regularized regression: comparing linear versus logistic regression"
+author: "Jitao David Zhang and Tao Fang"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  BiocStyle::pdf_document:
+    toc: true
+bibliography: logistic-linear-regression.bib
+vignette: >
+    %\VignetteIndexEntry{comparing linear versus logistic regression with gerr}
+    %\VignetteEngine{knitr::rmarkdown}
+---
+
+# Background
+
+In the manuscript *Gene-set Enrichment with Regularized Regression*, we propose using regularized regression to model the relationship between $Y$, a binary dependent (target) variable indicating membership of genes in a set of genes of interest (GOI hereafter), and $\Omega$, a matrix of binary variables indicating membership of genes in gene-sets that are potentially overlapping or even identical with each other.
+
+Classically, binary target variables are often modeled by logistic regression. Alternatively, they can also be modeled by simple linear regression [@agresti_introduction_2019], even when the target variable is a dichotomy, namely either $0$ or $1$ [@hellevik_linear_2009]. 
+
+In this document, we illustrate how the two types of modelling can be constructed with `gerr`, the software package that we published along with the manuscript. In addition, we compare the results of elastic-net regression using either the linear regression or the logistic regression.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message=FALSE)
+library(gerr) 
+library(glmnet)
+set.seed(1887)
+```  
+
+
+Throughout the document, we consider a small list of genes as genes of interest.
+
+```{r goi}
+gene_list <- c("TRPC4AP","CDC37","TNIP1","IKBKB",
+               "NKIRAS2","NFKBIA","TIMM50","RELB",
+               "TNFAIP3","NFKBIB","HSPA1A","NFKBIE",
+               "SPAG9","NFKB2","ERLIN1","REL",
+               "TNIP2","TUBB6","MAP3K8")
+```
+
+# Reguarlized linear regression
+
+The link function of the generalized linear regression is specified by, the `family` parameter in the `glmnet` and `cv.glmnet` functions in the `glmnet` package. First, we construct a linear regression model, using the Gaussian family (`family="gaussian"`).
+
+```{r gaussianFit}
+gaussRes <- regression_selected_pathways(gene_input=gene_list, 
+                                         family="gaussian",
+                                         alpha=0.5)
+```
+ 
+The results of linear regression are stable, in the sense that once the random-number generator runs in a predefined state by calling `set.seed` function, running the model several times will return the same results.
+
+```{r gaussianSel}
+gaussRes$selected_pathways_names
+```
+
+## Visualizaton of the feature-selection process of the linear model
+
+We use the `plot` function in the `glmnet` package to visualize the feature-selection process of the model.
+
+```{r linearPlot}
+plot(gaussRes$model)
+```
+
+Interestingly, we observe that the mean squared error (MSE) first decreases with increasing number of features (gene-sets in this case) selected, and then increase. This can be read from the plot above, from right to the left. This is apparently different from most prediction tasks, where MSE decreases with more features are used.
+
+I believe that this is due to the dichotomy nature of both dependent and independent variables. With more and more gene-sets are used for prediction, there will be more true-positive results, namely genes are correctly predicted to be in the set of genes of interest (GOI). However more false-positive results are also expected, namely genes outside the set of GOI are wrongly predicted to be members of GOI. Therefore, we use cross validation to select the optimal regularization parameter $\lambda$ in order to identify a minimal set of gene-sets that describe GOI.
+
+## Identifying the leading-edge genes
+
+Leading-edge genes were used in the GSEA paper to indicate genes that contribute significantly to the enrichment scores [@subramanian_gene_2005]. Here, we use the term to indicate genes that are correctly identified by the regularized regression algorithm as members of GOI. These true-positive genes are so-to-say supporting the model.
+
+By comparing the predicted `y` value (GOI membership) with the observed values, we notice that the prediction is far from perfect. Perhaps due to the sparsity of the GOI membership (~1/1000), the model is supported by a few genes within GOI while many other genes within GOI are wrongly predicted to have the same response variable as genes out of GOI.
+
+```{r gaussPredict}
+gaussPred <- predict(gaussRes$model, newx=gaussRes$x, s="lambda.min")
+table(predY=gaussPred, obsY=gaussRes$y)
+```
+
+Below are the genes that are supporting the model. They apparently are associated with NF-$\kappa$B signalling pathway. This is consistent with the selected gene-sets by the regularized regression model.
+
+```{r gaussTruePosGenes}
+# genes that drive the prediction using the Gaussian model
+# they are apparently NF-$\kappa$B relevant genes
+rownames(gaussRes$x)[which(gaussPred>0.12 & gaussRes$y==1)]
+```
+
+And below are the genes that are likely false-positives, namely these genes are not within GOI, but the model predicts otherwise. Indeed, these genes are also genes associated with the NF-$\kappa$B pathway.
+
+```{r gaussFalsePosGenes}
+# genes that drive the prediction using the Gaussian model
+# they are apparently NF-$\kappa$B relevant genes 
+rownames(gaussRes$x)[which(gaussPred>0.12 & gaussRes$y==0)]
+```
+
+# Reguarlized logistic regression
+
+Instead of simple linear regression, we can also use logistic regression to model the dichotomy of the dependent variable. Though the concept is similar to the linear regression, we found that the solution is not stable. Running the model several times will give partially overlapping but different results. 
+
+It is worth mentioning though that empirical observations suggest the results are similar to the linear-regression case. And if the model is repeatedly running many times, the selected gene-sets are observed to converge towards the  selected gene-sets using the simple linear regression. 
+
+```{r binomFit}
+binomRes <- regression_selected_pathways(gene_input=gene_list,
+                                         family="binomial",
+                                         alpha=0.5,
+                                         type.measure="deviance")
+length(binomRes$selected_pathways_names)
+```
+
+## Visualization of the feature-seletion process of the logistic regression model
+
+```{r binomPlot}
+plot(binomRes$model)
+```
+
+I think that the instability (at least partially) comes from the fact that the binomial deviance is not strictly convex but with two local minima (see an example above). The manuscript describing the `glmnet` package [@friedman_regularization_2010] discussed several important implementation details that may be relevant for this observation, among others given that $p >> N$, $\lambda$ cannot be run all down to zero, and that the Newton algorithm is not guaranteed to converge without step-size optimization, and the code in `glmnet` does not implement any checks for divergence. I believe that the observation of instability in the case of logistic regression deserves further study. For the current implementation, I believe it makes sense to stick to the simply linear regression for simplicity and robustness.
+
+## Prediction performance and leading-edge genes
+
+The prediction results of the logistic regression model are quite similar with those of the linear model.
+
+```{r binomPerformance}
+binomPred <- predict(binomRes$model, newx=binomRes$x, s="lambda.min")
+table(predY=binomPred, obsY=binomRes$y)
+```
+
+Indeed, the same set of leading-edge genes are identified.
+
+```{r binomTruePosGenes}
+# genes that drive the prediction using the binomial model
+# they are apparently NF-$\kappa$B relevant genes
+rownames(binomRes$x)[which(binomPred>(-3) & binomRes$y==1)]
+```
+
+And below are the genes that are likely false-positives, namely these genes are not within GOI, but the model predicts otherwise. Note that beyond the genes associated with the NF-$\kappa$B pathway that were identified by the linear model, a few other genes, including *RIPK3*, *RIPK1*, and *ZBP1*, are reported as well, which  have been also reported to be associated with or relevant for the NF-$\kappa$B pathway (for instance see [@yatim2015ripk1]).
+
+```{r binomFalsePosGenes}
+# genes that drive the prediction using the binomial model
+# they are apparently NF-$\kappa$B relevant genes 
+rownames(binomRes$x)[which(binomPred>(-3) & binomRes$y==0)]
+```
+
+# Conclusions
+
+In this document, we show how to construct regularized linear and logistic regression models using the `gerr` package, and compare the results of the two types of models.
+
+We observed that the linear regression provides stable solutions that are consistent with the results of regularized logistic regression. This was not only the case for the examples shown above; we tested multiple sets of genes of interest and made similar observations. 
+
+Based on these results, in the current implementation of the `gerr` package, we use the cross-validation version of the elastic-net regression using the  `gaussian` family (linear regression) as the default option, though the `binomial` family can be specified by the user as well.
+
+# R session info
+
+```{r session}
+sessionInfo()
+```
+
+# References
