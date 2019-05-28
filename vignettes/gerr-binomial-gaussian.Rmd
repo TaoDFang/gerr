@@ -22,7 +22,7 @@ In this document, we illustrate how the two types of modelling can be constructe
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
                       message=FALSE)
-library(GENEMABR) 
+library(gerr) 
 library(glmnet)
 set.seed(1887)
 ```  
