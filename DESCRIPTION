@@ -1,9 +1,9 @@
-Package: GENEMABR
-Title: Gene module/list annotation
+Package: gerr
+Title: Gene-set Enrichment with Regularized Regression
 Version: 0.99.17
 Author: Tao Fang and Jitao David Zhang, with inputs from Daniel Marbach
 Maintainer: Tao Fang <talonvonfang@gmail.com>
-Description: Gene-set module annotation or gene-set enrichment within a regression based framework.
+Description: Annotate genes of interest with heterogeneous and potentially redundant gene-sets by regularized regression
 Imports: glmnet,
          igraph,
          Matrix,
