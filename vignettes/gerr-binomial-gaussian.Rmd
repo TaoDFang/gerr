@@ -7,11 +7,11 @@ output:
     toc: true
 bibliography: logistic-linear-regression.bib
 vignette: >
-    %\VignetteIndexEntry{understanding binomial glmnet}
+    %\VignetteIndexEntry{comparing linear versus logistic regression with gerr}
     %\VignetteEngine{knitr::rmarkdown}
 ---
 
-# Introduction
+# Background
 
 In the manuscript *Gene-set Enrichment with Regularized Regression*, we propose using regularized regression to model the relationship between $Y$, a binary dependent (target) variable indicating membership of genes in a set of genes of interest (GOI hereafter), and $\Omega$, a matrix of binary variables indicating membership of genes in gene-sets that are potentially overlapping or even identical with each other.
 
