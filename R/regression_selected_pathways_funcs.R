@@ -55,9 +55,6 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
     warning("Not enough genes in the set of genes of interest. NULL is returned")
     return(NULL)
   }
-  if(family=="binomial") {
-    module_labels <- factor(module_labels, levels=c(0,1))
-  }
   
   cvfit <- cv.glmnet(gene_pathway_matrix,
                   module_labels,alpha =alpha, 
