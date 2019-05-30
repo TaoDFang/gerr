@@ -1,0 +1,35 @@
+---
+title: "Gene-set enrichment with regularized regression: simulation studies"
+author: "Jitao David Zhang and Tao Fang"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  BiocStyle::pdf_document:
+    toc: true
+vignette: >
+    %\VignetteIndexEntry{simulation studies with gerr}
+    %\VignetteEngine{knitr::rmarkdown}
+---
+
+# Background
+
+In the manuscript *Gene-set Enrichment with Regularized Regression* (`gerr` in short), we propose using regularized regression to model the relationship between $Y$, a dichotomous dependent variable indicating membership of genes in a set of genes of interest (GOI hereafter), and $\Omega$, a matrix of dichotomous variables indicating membership of genes in gene-sets that are potentially overlapping or even identical with each other.
+
+In this document, we perform simulation studies to demonstrate the sensitivity and specificity of the `gerr` method, using the software package of the same name that we published along with the manuscript and the elastic net implemented in the R software package `glmnet`. 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message=FALSE)
+library(gerr) 
+library(glmnet)
+set.seed(1887)
+```  
+
+# Simulations for specificity testing
+
+# Simulations for sensitivity testing
+
+# R session info
+
+```{r session}
+sessionInfo()
+```
