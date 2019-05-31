@@ -18,13 +18,109 @@ In this document, we perform simulation studies to demonstrate the sensitivity a
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
-                      message=FALSE)
+                      message=FALSE,
+                      fig.width=5, fig.height=5)
 library(gerr) 
 library(glmnet)
+library(msigdbr)
+library(MASS)
 set.seed(1887)
 ```  
 
+```{r fromRibiosUtils, echo=FALSE, include=FALSE}
+pairwiseDist <- function(list, fun=jaccardIndex) {
+  len <- length(list)
+  res <- matrix(0, len, len)
+  colnames(res) <- rownames(res) <- names(list)
+  vals <- sapply(seq(from = 1, to = len - 1), function(i) {
+    sapply(seq(from = i + 1, to = len), function(j) {
+      do.call(fun, list(list[[i]], list[[j]]))
+    })
+  })
+  vv <- unlist(vals)
+  res[lower.tri(res)] <- vv
+  res <- t(res) + res
+  diag(res) <- do.call(fun, list(list[[1]], list[[1]]))
+  return(res)
+}
+overlapCoefficient <- function(x,y, checkUniqueNonNA=FALSE) {
+  if(checkUniqueNonNA) {
+    x <- uniqueNonNA(x)
+    y <- uniqueNonNA(y)
+  }
+  res <- length(intersect(x,y))/pmin(length(x), length(y))
+  return(res)
+}
+pairwiseOverlapCoefficient <- function(list) {
+  return(pairwiseDist(list, fun=overlapCoefficient))
+}
+```
+
+# Data used for simulation
+
+We wish to use real-world gene-sets that are commonly used by the community for the simulation study for `gerr`, because synthesized gene-sets may have distributions of sizes, defined by the number of unique genes and overlapping patterns that depart from real-world gene-sets. Therefore we decided to use curated gene-sets provided by the MSigDB database (Category `C2`) for this purpose. These gene-sets are curated from online pathway databases, publications in PubMed, and collected knowledge of domain experts. Therefore they are not structured in tree structures like gene-sets from Gene Ontology (GO) or from the Reactome pathway database. 
+
+```{r gmt}
+simTibble <- msigdbr::msigdbr(species="Homo sapiens",
+                             category = c("C2"))
+simGenesAll <- with(simTibble, tapply(human_gene_symbol, gs_name, unique))
+simGenesets <- sample(simGenesAll, 500)
+simLen <- sapply(simGenesets, function(x) length(x))
+```
+
+The gene-sets are retrieved using the `msigdbr` package. For the purpose of simulation, we randomly sample 500 gene-sets from all gene-sets of the category C2 (N=`r length(simGenesets)`). The histogram below shows the distribution of gene-set size in the sub-sampled set of gene-sets.
+
+```{r sizeDist}
+{
+  hist(simLen, xlab="Number of unique genes", 
+       breaks=50, freq = FALSE,
+       col="lightblue", main="Gene-set size distribution")
+  lines(density(simLen, from=0), col="#004495", lwd=2)
+}
+```
+
+Next, we investigate the degree of redundancy among these gene-sets. We use the overlap coefficient, defined by $|A \cap B|/min(|A|,|B|)$ between two sets $A$ and $B$, to measure this.
+
+```{r overlapDist}
+simPairwiseOverlap <- pairwiseOverlapCoefficient(simGenesets)
+utOver <- simPairwiseOverlap[upper.tri(simPairwiseOverlap, diag=FALSE)]
+{
+  hist(utOver, xlab="Pairwise overlapping cofficient between gene-sets", 
+       breaks=50, freq = FALSE,
+       col="orange", 
+       main="Overlapping coefficient distribution")
+  lines(density(utOver, from=0), col="red", lwd=2)
+}
+```
+
+```{r overlapStat, include=FALSE}
+nonZeroOverlap <- mean(utOver!=0)
+nonZeroUts <- utOver[utOver!=0]
+nzutMed <- median(nonZeroUts)
+nzutMad <- mad(nonZeroUts)
+nzutPos <- mean(nonZeroUts>0.5)
+```
+
+We calculated the overlap coefficient for all unique pairs of gene-sets, and its distribution is shown in the histogram above. While no overlapping genes are identified between 69.8% pairs of gene-sets, overlapping genes are found in 30.2% pairs of gene-sets, with an median overlap coeffiecient of 0.047 and median absolute deviation (MAD) of 0.035. In about 0.5% of the cases, the overlap coefficient is equal or larger than 0.5. It suggests that while the assumption of independence between gene-sets may hold true when few gene-sets are used, there will be violation when many gene-sets are used for testing. 
 # Simulations for specificity testing
+
+We first start with the simplest simulation that is possible: we randomly select genes of one gene-set as the genes of interest (GOI), and test whether we can recover the gene-set using `gerr`.
+
+First we convert the gene-sets into gene-pathway matrix required by `gerr::regression_selected_pathways`.
+
+```{r gsMatrix}
+bgGenes <- unique(unlist(simGenesets))
+gsMatrix <- Matrix(sapply(simGenesets, function(x) as.integer(bgGenes %in% x)),
+                   sparse=TRUE,
+                   dimnames=list(bgGenes, names(simGenesets)))
+```
+
+```{r}
+selInd <- sample(seq(along=simGenesets), 1)
+selGsName <- names(simGenesets)[selInd]
+selGs <- simGenesets[[selInd]]
+selRes <- regression_selected_pathways(gene_input=selGs, gene_pathway_matrix = gsMatrix)
+```
 
 # Simulations for sensitivity testing
 
