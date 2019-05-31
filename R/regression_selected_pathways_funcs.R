@@ -64,14 +64,12 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
   
   passParams <- list(...)
   hasIntercept <- is.null(passParams$intercept) || (!is.null(passParams$intercept) & passParams$intercept)
-  browser()
   coef <- coef(cvfit, s = "lambda.min")
-  if(hasIntercept) {
-    non0index <- coef@i[-1]   #remove intercept
-    non0coef <- coef@x[-1]
-  } else {
-    non0index <- coef@i
-    non0coef <- coef@x
+  non0index <- coef@i
+  non0coef <- coef@x
+  if(hasIntercept) { #remove intercept
+    non0index <- non0index[-1]   
+    non0coef <- non0coef[-1]
   }
   isPosCoef <- non0coef>0
   selected_index <- non0index[isPosCoef]
