@@ -62,20 +62,29 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
                   lower.limits=0,
                   ...)
   
+  passParams <- list(...)
+  hasIntercept <- is.null(passParams$intercept) || (!is.null(passParams$intercept) & passParams$intercept)
+  browser()
   coef <- coef(cvfit, s = "lambda.min")
-  non0index <- coef@i[-1]   #remove intercept
-  non0coef <- coef@x[-1]
-  selected_index <- non0index[which(non0coef>0)]
+  if(hasIntercept) {
+    non0index <- coef@i[-1]   #remove intercept
+    non0coef <- coef@x[-1]
+  } else {
+    non0index <- coef@i
+    non0coef <- coef@x
+  }
+  isPosCoef <- non0coef>0
+  selected_index <- non0index[isPosCoef]
   selected_pathways <- all_pathways[selected_index]
-  selected_coef <- non0coef[which(non0coef>0)]
+  selected_coef <- non0coef[isPosCoef]
   names(selected_coef) <- selected_pathways
   
-  if(length(selected_pathways)>0){
-    fisher_exact_test_results=fisher_exact_test(selected_pathways,module_common_genes,gene_pathway_matrix=NULL )
-    selected_pathways_fisher_pvalue=fisher_exact_test_results$selected_pathways_fisher_pvalue
-    selected_pathways_num_genes=fisher_exact_test_results$selected_pathways_num_genes
+  if(any(isPosCoef)){
+    fisher_exact_test_results <- fisher_exact_test(selected_pathways,module_common_genes,gene_pathway_matrix=gene_pathway_matrix)
+    selected_pathways_fisher_pvalue <- fisher_exact_test_results$selected_pathways_fisher_pvalue
+    selected_pathways_num_genes <- fisher_exact_test_results$selected_pathways_num_genes
     
-    new_order=order(selected_coef,decreasing = TRUE)
+    new_order <- order(selected_coef,decreasing = TRUE)
     
     res <- list(selected_pathways_names=from_id2name(selected_pathways=names(selected_coef[new_order])),
                 selected_pathways_coef=selected_coef[new_order],
