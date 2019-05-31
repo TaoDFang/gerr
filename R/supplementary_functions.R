@@ -107,7 +107,7 @@ find_root_ids=function(selected_pathways){
 #' from_id2name
 #'
 #' If you use the default pathway databases(GO Ontologyand REACTOME),this function can help you to get pathways
-#' names from pathways IDs.
+#' names from pathways IDs. If not found, the gene-set name is used.
 #' @param selected_pathways A list of GO and/or REACTOME pathways IDs. Each elmment is this list can be a single
 #' id or multi-ids seperated "#"
 #' @return  A list of GO sub-root or REACTOME root names for provided pathways.
@@ -141,7 +141,8 @@ from_id2name=function(selected_pathways){
       }
     }
   })
-  names(names)=selected_pathways
+  names[is.na(names)] <- selected_pathways
+  names(names) <- selected_pathways
   return(names)
 }
 
