@@ -164,10 +164,13 @@ verificate <- function(genesets, gsMatrix, index) {
   res <- list(results=selRes, selInd=selInd, isRecovered=isRecovered)
   return(res)
 }
-system.time(verifRes <- verificate(simGenesets, gsMatrix, index=seq(along=simGenesets)))
+system.time(verifRes <- verificate(simGenesets, 
+                                   gsMatrix, 
+                                   index=seq(along=simGenesets)))
 summary(verifRes$isRecovered) ## all recovered
 verifSelCount <- sapply(verifRes$selInd, length)
-summary(verifSelCount>1) ## in 44 cases of 500 gene-sets, more than one gene-set was selected
+## in 44 cases of 500 gene-sets, more than one gene-set was selected
+summary(verifSelCount>1) 
 verifMt1AvgOe <- sapply(which(verifSelCount>1), function(i) {
   selGnames <- names(verifRes$results[[i]]$selected_pathways_names)
   poe <- pairwiseOverlapCoefficient(simGenesets[selGnames])
