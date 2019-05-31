@@ -68,7 +68,11 @@ simGenesets <- sample(simGenesAll, 500)
 simLen <- sapply(simGenesets, function(x) length(x))
 ```
 
-The gene-sets are retrieved using the `msigdbr` package. For the purpose of simulation, we randomly sample 500 gene-sets from all gene-sets of the category C2 (N=`r length(simGenesets)`). The histogram below shows the distribution of gene-set size in the sub-sampled set of gene-sets.
+The gene-sets are retrieved using the `msigdbr` package. For the purpose of simulation, we randomly sample 500 gene-sets from all gene-sets of the category C2 (N=`r length(simGenesets)`). 
+
+## Distribution of gene-set sizes
+
+The histogram below shows the distribution of gene-set size in the sub-sampled set of gene-sets.
 
 ```{r sizeDist}
 {
@@ -78,6 +82,10 @@ The gene-sets are retrieved using the `msigdbr` package. For the purpose of simu
   lines(density(simLen, from=0), col="#004495", lwd=2)
 }
 ```
+
+The median gene-set size is `r median(simLen)`, with heavy tail on the right side.
+
+## Distribution of pairwise overlap coefficients between gene-sets
 
 Next, we investigate the degree of redundancy among these gene-sets. We use the overlap coefficient, defined by $|A \cap B|/min(|A|,|B|)$ between two sets $A$ and $B$, to measure this.
 
