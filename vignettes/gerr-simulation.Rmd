@@ -102,9 +102,9 @@ nzutPos <- mean(nonZeroUts>0.5)
 ```
 
 We calculated the overlap coefficient for all unique pairs of gene-sets, and its distribution is shown in the histogram above. While no overlapping genes are identified between 69.8% pairs of gene-sets, overlapping genes are found in 30.2% pairs of gene-sets, with an median overlap coeffiecient of 0.047 and median absolute deviation (MAD) of 0.035. In about 0.5% of the cases, the overlap coefficient is equal or larger than 0.5. It suggests that while the assumption of independence between gene-sets may hold true when few gene-sets are used, there will be violation when many gene-sets are used for testing. 
-# Simulations for specificity testing
+# Model verification
 
-We first start with the simplest simulation that is possible: we randomly select genes of one gene-set as the genes of interest (GOI), and test whether we can recover the gene-set using `gerr`.
+We first verify that gene-set enrichment with regularized regression (`gerr`) performs as expected using the simplest simulation that is possible: we assign genes of one gene-set as GOI, and test whether we can recover the gene-set using `gerr`.
 
 First we convert the gene-sets into gene-pathway matrix required by `gerr::regression_selected_pathways`.
 
@@ -115,13 +115,69 @@ gsMatrix <- Matrix(sapply(simGenesets, function(x) as.integer(bgGenes %in% x)),
                    dimnames=list(bgGenes, names(simGenesets)))
 ```
 
-```{r}
-selInd <- sample(seq(along=simGenesets), 1)
+In the code chunk below, we verify that the model works in the sense that the gene-set that is used as source of GOI is correctly recovered, using randomly selected 10 gene-sets.
+
+```{r smallVeri}
+selInd <- sample(seq(along=simGenesets), 10)
 selGsName <- names(simGenesets)[selInd]
-selGs <- simGenesets[[selInd]]
-selRes <- regression_selected_pathways(gene_input=selGs, gene_pathway_matrix = gsMatrix)
+selGs <- simGenesets[selInd]
+selRes <- lapply(selGs, function(gs)
+  regression_selected_pathways(gene_input=gs, gene_pathway_matrix = gsMatrix))
+foundCounts <- sapply(seq(along=selInd), 
+                      function(i) length(selRes[[i]][[1]]))
+isRecovered <- sapply(seq(along=selInd), 
+                      function(i) selGsName[i] %in% names(selRes[[i]][[1]]))
+stopifnot(all(isRecovered))
+table(foundCounts)
 ```
 
+The `foundCounts` variable indicates the number of gene-sets whose coeffient is positive. In this particular example, we have 8 cases where only one gene-set is selected, and thanks to the observation that the input gene-set is all recovered (`isRecovered` is all true), the selected gene-set by `gerr` must be the input geneset.
+
+There are two cases where two gene-sets are returned. The code below examine how the selected gene-sets are related.
+
+```{r moreThanOneSel}
+mt1Return <- foundCounts>1
+mt1ReturnOverlapCoef <- sapply(which(mt1Return), function(i) {
+  selGnames <- names(selRes[[i]]$selected_pathways_names)
+  poe <- pairwiseOverlapCoefficient(simGenesets[selGnames])
+  mean(poe[upper.tri(poe, diag=FALSE)])
+})
+print(mt1ReturnOverlapCoef)
+```
+
+It turns out in both cases, the selected gene-sets (one of which is the input gene-set) are partially redudant, with an overlap coefficient higher than 0.5. This makes sense because when two dependent variables are similarly correlated with the target variable, they are given similar weights by the elastic net.
+
+Below we run the simulation for all gene-sets. This is not executed by default because of running time (about six minutes in a Linux in Virtual environment with 4G memory and one core Intel i5 CPU), but the idea is the same as the small verification step above.
+
+```{r verificateAll, eval=FALSE}
+verificate <- function(genesets, gsMatrix, index) {
+  stopifnot(index %in% seq(along=genesets))
+  selGsName <- names(genesets)[index]
+  selGs <- genesets[index]
+  selRes <- lapply(selGs, function(gs) {
+    regression_selected_pathways(gene_input=gs, gene_pathway_matrix = gsMatrix)
+  })
+  selInd <- sapply(seq(along=index), 
+                        function(i) selRes[[i]][[1]])
+  isRecovered <- sapply(seq(along=index), 
+                        function(i) selGsName[i] %in% names(selRes[[i]][[1]]))
+  res <- list(results=selRes, selInd=selInd, isRecovered=isRecovered)
+  return(res)
+}
+system.time(verifRes <- verificate(simGenesets, gsMatrix, index=seq(along=simGenesets)))
+summary(verifRes$isRecovered) ## all recovered
+verifSelCount <- sapply(verifRes$selInd, length)
+summary(verifSelCount>1) ## in 44 cases of 500 gene-sets, more than one gene-set was selected
+verifMt1AvgOe <- sapply(which(verifSelCount>1), function(i) {
+  selGnames <- names(verifRes$results[[i]]$selected_pathways_names)
+  poe <- pairwiseOverlapCoefficient(simGenesets[selGnames])
+  mean(poe[upper.tri(poe, diag=FALSE)])
+})
+```
+
+We verify that all gene-sets that were assigned as genes of interest was successfully recovered. Int 44 out of 500 gene-sets, more than one gene-set was selected by `gerr`. The average pairwise overlap coefficient between multiple selected genesets is quite high (median 0.86, MAD 0.123). It suggests that `gerr` is able to identify gene-sets that are highly enriched among many gene-sets.
+
+# Simulations for specificity testing
 # Simulations for sensitivity testing
 
 # R session info
