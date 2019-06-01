@@ -52,7 +52,7 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
   module_labels[module_common_genes] <- 1
   
   if(length(module_common_genes)<=1) {
-    warning("Not enough genes in the set of genes of interest. NULL is returned")
+    warning("Not enough genes in the set of genes of interest. NULL is returned.\n")
     return(NULL)
   }
   
@@ -93,7 +93,7 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
                 y=module_labels)
 
   } else {
-    warning("No selected gene-sets with the given parameter set. NULL is returned.")
+    warning("No selected gene-sets with the given parameter set. NULL is returned.\n")
     res <- list(model=cvfit, 
                 x=gene_pathway_matrix,
                 y=module_labels)
