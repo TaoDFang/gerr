@@ -8,8 +8,7 @@ gerr.Rproj
 *.log
 *.pdf
 
-vignettes/figures/*.png
-vignettes/figures/*.pdf
+vignettes/figures
 
 
 doc
