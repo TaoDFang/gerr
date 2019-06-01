@@ -56,11 +56,19 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
     return(NULL)
   }
   
-  cvfit <- cv.glmnet(gene_pathway_matrix,
+  cvfit <- try(cv.glmnet(gene_pathway_matrix,
                   module_labels,alpha =alpha, 
                   family=family, lambda=lambda,
                   lower.limits=0,
-                  ...)
+                  ...))
+
+  if(class(cvfit)=="try-error") {
+    warning("cv.glmnet failed. The error and the model input is returned for debugging purposes.\n")
+    res <- list(model=cvfit,
+                x=gene_pathway_matrix,
+                y=module_labels)
+    return(res)
+  }
   
   passParams <- list(...)
   hasIntercept <- is.null(passParams$intercept) || (!is.null(passParams$intercept) & passParams$intercept)
