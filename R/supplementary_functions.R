@@ -56,7 +56,7 @@ fisher_exact_test=function(selected_pathways,gene_input,gene_pathway_matrix=NULL
     c=sum(gene_pathway_matrix[,fisher_pathway])-a
     d=length(all_genes)-a-c-b
     contigency_table=matrix(c(a,b,c,d),nrow = 2)
-    fisher_result=stats::fisher.test(contigency_table)
+    fisher_result=stats::fisher.test(contigency_table, alternative = "greater")
     selected_pathways_fisher_pvalue[fisher_pathway]=fisher_result[['p.value']]
     selected_pathways_num_genes[fisher_pathway]=sum(gene_pathway_matrix[,fisher_pathway])
   }
