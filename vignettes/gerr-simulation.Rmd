@@ -238,10 +238,11 @@ if(!file.exists(modelVerifRdata) || params$overwriteCache) {
   system.time(verifRes <- verificate(simGenesets, 
                                      gsMatrix, 
                                      index=seq(along=simGenesets)))
+  verifPaths <- lapply(verifRes$results,
+                       function(x) x$selected_pathways_names)
   verifKeyRes <- list(isRecovered = verifRes$isRecovered,
                       selInd = verifRes$selInd,
-                      selected_pathways_names=lapply(verifRes$results,
-                                                    function(x) x$selected_pathways_names))
+                      selected_pathways_names=verifPaths)
   save(verifKeyRes, file=modelVerifRdata)
 } else {
   load(modelVerifRdata)
@@ -382,7 +383,7 @@ oeDen <- rbind(cbind(Class="gerr", verifMt1AvgOeDenData),
                cbind(Class="random", randomAvgOeDenData))
 oeDen$Class <- factor(oeDen$Class,
                       levels=c("gerr", "FET+FDR", "random"))
-ggplot(oeDen,
+oeDenPlot <- ggplot(oeDen,
        aes(x=x, y=y, color=Class)) +
   scale_colour_manual(values=c(gerrCol,
                                fetFdrCol,
@@ -390,8 +391,8 @@ ggplot(oeDen,
                       name="") +
   geom_line(lwd=1.5)  + 
   ylab("Normalised density") +
-  xlab("Mean overlap coefficient") +
-  ggtitle("False positive hits")
+  xlab("Mean overlap coefficient")
+print(oeDenPlot)
 ```
 
 The average pairwise overlap coefficient between false-positive hits and the true positive hit is very high (median `r median(verifMt1AvgOe)`, MAD `r mad(verifMt1AvgOe)`), and in comparison much higher than the mean overlap coefficient between false and true positive hits returned by FET+FDR and between randomly selected gene-sets. Such *false-positive hits* are selected by `gerr` because the elastic net algorithm wil give half of the weight to two identical features. While under certain circumstances they complicate results interpretation (but much less so compared with the results of the FET+FDR procedure), in other contexts gene-sets with similar but not identical sets of genes may be potentially interesting for end users since they may reflect relevant but not identical biological functions.
