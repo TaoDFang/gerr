@@ -431,7 +431,7 @@ The results can be interpreted as follows.
 
 ## A full scale simulation with the probabilistic model and results interpretation
 
-Below we perform the full-scale simulation with the probabilistic model, using a variety of combinations of the parameters $p_{g_{s}}$, $p_g$, and $p_n$. For each parameter set, five independent simulations are run. The median values of the five simulation runs are reporteed for each measure (true-positive rate, false-positive rate, *etc.*). 
+Below we perform the full-scale simulation with the probabilistic model, using a variety of combinations of the parameters $p_{gs}$, $p_g$, and $p_n$. For each parameter set, five independent simulations are run. The median values of the five simulation runs are reporteed for each measure (true-positive rate, false-positive rate, *etc.*). 
 
 ```{r fullProbSim, warning=FALSE}
 p_gs_cand <- c(0.002, 0.005, 0.01,
@@ -491,6 +491,10 @@ tprGerr <- ggplot(avgFullProbSimRes,
 print(tprGerr)
 ```
 
+It seems that `gerr` in general has high sensitivity, even when the noise probabiliy is as high as 0.1 (namely each gene has the probability of $0.1$ to be selected as a gene of interest, independent whether it is associated with any gene-set or not). The sensitivity is only low when very few genes in the gene-set contribute to GOI (say less than 10%), which makes sense intuitively.
+
+The lack of sensitivity in the case of $p_{gs}<0.005$ is because we have only 500 gene-sets, and in random sampling, there are cases where no gene-set was selected to contribute to GOI.
+
 The plot below visualizes the pattern of TPR in case of the FET+FDR procedure.
 
 ```{r tprFF, fig.width=7.5, fig.height=5}
@@ -542,6 +546,10 @@ fprGerr <- ggplot(avgFullProbSimRes,
 print(fprGerr)
 ```
 
+The specificity of `gerr` seems quite robust against the choice of $p_{n}$. It decreases when $p_{gs}$ is high, namely when many gene-sets contribute to GOI. Likely it is because of calling other gene-sets that are partially redundant as false-positive hits, as shown in the previous verification step.
+
+Next we reveal how FPR change in the case of FET+FDR.
+
 ```{r fprFF, fig.width=7.5, fig.height=5}
 fprFF <- ggplot(avgFullProbSimRes, 
                 aes(x=factor(p_gs), y=factor(p_g), fill=FPR.ff)) +
@@ -592,6 +600,8 @@ f1Gerr <- ggplot(avgFullProbSimRes,
 print(f1Gerr)
 ```
 
+It seems that $F_{1}$ score of `gerr` in quite robust against $p_n$, as long as $p_{gs}$ and $p_{g}$ is reasonably high.
+
 Next we visualize the $F_1$ scores of the FET+FDR procedure.
 
 ```{r f1FF, fig.width=7.5, fig.height=5}
@@ -625,6 +635,7 @@ f1Diff <- ggplot(avgFullProbSimRes,
 print(f1Diff)
 ```
 
+We observe that $F_1$ score of `gerr` is generally higher than FET+FDR, especially when many gene-sets contribute to GOI, and when many genes of selected gene-sets do contribute to GOI.
 <!--
 ### Partially redundant gene-sets as hits of gerr
 
@@ -642,7 +653,9 @@ ggplot(avgFullProbSimRes,
 
 # Conclusions
 
-In this document, we first characterized the gene-sets (a subset of MSigDB C2 category gene-sets) that we used for the simulation study. Next, we verificated that our model performs as expected by using gene-sets directly as genes of interest and recovering them. Last but not least, we used a generative probabilistic model to generate genes of interest by sampling gene-sets and genes within selected gene-sets, and by adding a noise term. Simulations with the probabistic model show that gene-set enrichment with regularized regression (`gerr`) is a method with high sensitivity and specificity, and is robust with regard to noise in the set of genes of interest. Within the parameter space of our simulation,  `gerr` outperforms Fisher's exact test and FDR correction in situations where the genes of interest are contributed by many gene-sets and/or where genes within a gene-set have a large probability to contribute to GOI.
+In this document, we first characterized the gene-sets (a subset of MSigDB C2 category gene-sets) that we used for the simulation study. Next, we verificated that our model performs as expected by using gene-sets directly as genes of interest and recovering them. Last but not least, we used a generative probabilistic model to generate genes of interest by sampling gene-sets and genes within selected gene-sets, and by adding a noise term. 
+
+Model verification and simulations with the probabistic model show that gene-set enrichment with regularized regression (`gerr`) is a method with high sensitivity and specificity, and is robust with regard to noise in the set of genes of interest. Within the parameter space of our simulation,  `gerr` outperforms Fisher's exact test and FDR correction in situations where the genes of interest are contributed by many gene-sets and/or where genes within a gene-set have a large probability to contribute to GOI.
 
 # R session info
 
