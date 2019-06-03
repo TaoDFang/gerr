@@ -111,7 +111,7 @@ from pathways/gene sets.For gene i and pathway j, the value of matrix(i,j) is 1 
 
 Users could use default gene_pathway_matrix  so it will use pre-collected gene_pathway_matrix from GO Ontology and REACTOME databaase. Altertatively, Users could use their own customized gene_pathway_matrix.
 
-The step below constructs a regularized linear regression model, using a pretrained lambda value `pretrained_gaussian_lambda`.
+The step below constructs a regularized linear regression model, using a pretrained lambda value `pretrained_gaussian_lambda (c(0.007956622,0.01))`.
 
 ```{r enrichment}
 #Gene module from the paper
