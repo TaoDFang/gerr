@@ -250,7 +250,7 @@ if(!file.exists(modelVerifRdata) || params$overwriteCache) {
 
 We first confirm that each gene-sets used as a GOI was successfully rediscovered by `gerr`.
 ```{r verficateRes}
-summary(verifKeyRes$isRecovered) ## all recovered
+all(verifKeyRes$isRecovered) ## all recovered
 ```
 
 Next we query the frequency of cases where `gerr` returned more than one gene-set.
@@ -263,7 +263,102 @@ summary(verifSelCount>1)
 
 We found that in `r sum(verifSelCount>1)` cases out of `r length(verifSelCount)`, one than one gene-set is returned by `gerr`. The gene-sets that were not used as GOI but selected by `gerr` may be regarded as *false positive hits*. However, when we examine the similarity of these gene-sets and the true positive hit using the overlap coefficient (and the average when more than one false-positive hits are available), we found that these *false-positive hits* are in fact very similar compared with the true-positive hit. And the similarity is much higher than what is expected when a random set of gene-sets are chosen and their average overlap coefficient is calculated.
 
+As a comparison, we run one-sided Fisher's exact test and adjust the p-values by Benjamini-Hochberg method (the FET+FDR procedure) using the same strategy, setting one gene-set as GOI a time.
+
+First we implement the FET+FDR stratgy.
+
+```{r fetFdr}
+fetFdr <- function(goi, bgGenes) {
+  goi <- uniqueNonNA(goi)
+  bgGenes <- uniqueNonNA(bgGenes)
+  bgDiffGoi <- setdiff(bgGenes, goi)
+  fetRes <- sapply(simGenesets, function(x) {
+     selHits <- length(intersect(x, goi))
+     nonselHits <- length(goi) - selHits
+     selNonhits <- length(x) - selHits
+     nonselNonhits <- length(bgDiffGoi) - selNonhits
+     mat <- matrix(c(selHits, nonselHits, selNonhits, nonselNonhits),2,2)
+     res <- stats::fisher.test(mat, alternative = "greater")$p.value
+  })
+  ff <- p.adjust(fetRes, "BH") ## we denote fetFdr from here on as ff
+  return(ff)
+}
+```
+
+Next we run the verification step using FET+FDR.
+
+```{r fetFdrVerif}
+fetFdrVerifRdata <- file.path(gerrRootDir, 
+                             "data/fetFdrVerification.RData")
+if(!file.exists(fetFdrVerifRdata) || params$overwriteCache) {
+  fisherVerif <- lapply(seq(along=simGenesets), function(i) {
+    goi <- simGenesets[[i]]
+    ffRes <- fetFdr(goi, bgGenes)
+    isHit <- ffRes<0.05
+    hits <- names(simGenesets)[isHit]
+    resp <- ffRes[hits]; names(resp) <- hits
+    if(length(resp)>1) {
+      cosel <- setdiff(hits, names(simGenesets)[i])
+      poe <- listOverlapCoefficient(list(goi),
+                                    simGenesets[cosel])
+      meanPoe <- mean(poe)
+    } else{
+      meanPoe <- NA
+    }
+    res <- list(hits=resp, meanPoe=meanPoe)
+    return(res)
+  })
+  save(fisherVerif, file=fetFdrVerifRdata)
+} else{
+  load(fetFdrVerifRdata)
+}
+```
+
+It is easy to confirm that FET+FDR has a sensitivity of 100%, namely all gene-sets used as input of GOI are rediscovered.
+
+```{r fetFdrSens}
+all(sapply(seq(along=simGenesets), 
+           function(i) names(simGenesets)[i] %in% names(fisherVerif[[i]]$hits)))
+```
+
+We first compare the number of false-positive hits of both methods.
+
+```{r verifFp, fig.width=4, fig.height=3}
+gerrFpCounts <- verifSelCount - 1
+fetFdrFpCounts <- sapply(fisherVerif, function(x) length(x$hits)-1)
+verifFpCounts <- data.frame(Geneset=names(simGenesets),
+                            method=factor(rep(c("gerr", "FET+FDR"),
+                                       each=length(simGenesets)),
+                                       levels=c("gerr","FET+FDR")),
+                            FP=c(gerrFpCounts, fetFdrFpCounts))
+
+fetFdrCol <- "#E6AB02"
+randomCol <- "#CCCCCC"
+gerrCol <- "#4DAF4A"
+veriFpPlot <- ggplot(verifFpCounts, 
+       aes(x=cut(FP, c(-Inf,0,1,2,3,Inf),
+                 labels=c("0", "1", "2", "3", ">3")),
+           fill=method)) +
+  scale_fill_manual(values=c(gerrCol, fetFdrCol),
+                    name="") +
+  geom_bar(position=position_dodge2(preserve="single")) +
+  xlab("False-positive hits") +
+  ylab("Gene-set count") +
+  theme(axis.text.x=element_text(angle = 0))
+print(veriFpPlot)
+```
+
+The `gerr` returned no false-positive hits in `r sprintf("%1.1f%%", mean(gerrFpCounts ==0)*100)` cases, and otherwise only returned no more than two false-positive hits. In contrast, FET+FDR very frequently returned a large number of false-positive hits.
+
+We believe that the false-positive hits of `gerr` are likely caused by redundancy in gene-sets. Therefore we show below the mean overlap coefficient between false-positive and true-positive hits returned by `gerr`. As a comparison, we show the value also for hits returned by FET+FDR and for randomly selected gene-sets.
+
 ```{r verificateMt1Oe, fig.height=3, fig.width=4}
+densityDf <- function(x, from=0, to=1) {
+  den <- density(x, from=from, to=to)
+  res <- data.frame(x=den$x,
+                    y=den$y/max(den$y))
+  return(res)
+}
 verifMt1AvgOe <- sapply(which(verifSelCount>1), function(i) {
   inputGs <- names(simGenesets)[i]
   selGnames <- setdiff(names(verifKeyRes$selected_pathways_names[[i]]),
@@ -272,30 +367,37 @@ verifMt1AvgOe <- sapply(which(verifSelCount>1), function(i) {
                                 simGenesets[selGnames])
   mean(poe)
 })
-verifMt1AvgOeDen <- density(verifMt1AvgOe, from=0, to=1)
-verifMt1AvgOeDenData <- data.frame(x=verifMt1AvgOeDen$x,
-                                   y=verifMt1AvgOeDen$y/max(verifMt1AvgOeDen$y))
+verifMt1AvgOeDenData <- densityDf(verifMt1AvgOe) 
 randomAvgOe <- sapply(which(verifSelCount>1), function(i) {
   selNo <- length(verifKeyRes$selected_pathways_names[[i]])
   randomGs <- sample(names(simGenesets), selNo, replace=TRUE)
   poe <- listOverlapCoefficient(simGenesets[randomGs])
   mean(poe[upper.tri(poe, diag=FALSE)])
 })
-randomAvgOeDen <- density(randomAvgOe, from=0, to=1)
-randomAvgOeDenData <- data.frame(x=randomAvgOeDen$x,
-                                 y=randomAvgOeDen$y/max(randomAvgOeDen$y))
+randomAvgOeDenData <- densityDf(randomAvgOe)
+fisherAvgOe <- na.omit(sapply(fisherVerif, function(x) x$meanPoe))
+fisherAvgOeDenData <- densityDf(fisherAvgOe)
 oeDen <- rbind(cbind(Class="gerr", verifMt1AvgOeDenData),
+               cbind(Class="FET+FDR", fisherAvgOeDenData),
                cbind(Class="random", randomAvgOeDenData))
+oeDen$Class <- factor(oeDen$Class,
+                      levels=c("gerr", "FET+FDR", "random"))
 ggplot(oeDen,
        aes(x=x, y=y, color=Class)) +
-  scale_colour_manual(values=c("red", "darkgray"),
+  scale_colour_manual(values=c(gerrCol,
+                               fetFdrCol,
+                               randomCol),
                       name="") +
   geom_line(lwd=1.5)  + 
   ylab("Normalised density") +
-  xlab("Average overlap coefficient")
+  xlab("Mean overlap coefficient") +
+  ggtitle("False positive hits")
 ```
 
-We verify that all gene-sets that were assigned as genes of interest was successfully recovered. In 44 out of 500 gene-sets, more than one gene-set was selected by `gerr`. The average pairwise overlap coefficient between false-positive hits and the true positive hit is quite high (median `r median(verifMt1AvgOe)`, MAD `r mad(verifMt1AvgOe)`). It suggests that `gerr` is able to identify gene-sets that are highly enriched among many gene-sets.
+The average pairwise overlap coefficient between false-positive hits and the true positive hit is very high (median `r median(verifMt1AvgOe)`, MAD `r mad(verifMt1AvgOe)`), and in comparison much higher than the mean overlap coefficient between false and true positive hits returned by FET+FDR and between randomly selected gene-sets. Such *false-positive hits* are selected by `gerr` because the elastic net algorithm wil give half of the weight to two identical features. While under certain circumstances they complicate results interpretation (but much less so compared with the results of the FET+FDR procedure), in other contexts gene-sets with similar but not identical sets of genes may be potentially interesting for end users since they may reflect relevant but not identical biological functions.
+
+In short, with a very simple verification procedure, we verify that by using `gerr`, all gene-sets that were assigned as genes of interest were successfully recovered. In most cases, the only gene-set selected by `gerr` was the true positive hit. In other cases, more than one gene-set was selected by `gerr`. The co-selected gene-sets are highly redudant with the true positive hit.
+
 
 # Simulations based on a probabilistic model
 
@@ -363,18 +465,7 @@ probSim <- function(p_gs=0.01, p_g=0.5, p_n=1E-3, seed=1L) {
   }
   
   ## compare with Fisher's exact test + FDR (ff)
-  
-  bgDiffGoi <- setdiff(bgGenes, probGoi)
-  fetRes <- sapply(simGenesets, function(x) {
-     selHits <- length(intersect(x, probGoi))
-     nonselHits <- length(probGoi) - selHits
-     selNonhits <- length(x) - selHits
-     nonselNonhits <- length(bgDiffGoi) - selNonhits
-     mat <- matrix(c(selHits, nonselHits, selNonhits, nonselNonhits),2,2)
-     res <- stats::fisher.test(mat, alternative = "greater")$p.value
-  })
-  ff <- p.adjust(fetRes, "BH") ## we denote fetFdr from here on as ff
-  
+  ff <- fetFdr(goi=probGoi, bgGenes=bgGenes)
   ffSelGs <- names(which(ff<=0.05))
   
   ffTp <- intersect(ffSelGs, gsSelNames)
