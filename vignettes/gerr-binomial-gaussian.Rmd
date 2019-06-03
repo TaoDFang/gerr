@@ -21,7 +21,10 @@ In this document, we illustrate how the two types of modelling can be constructe
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
-                      message=FALSE)
+                      message=FALSE,
+                      fig.path = "figures/",
+                      dev = c('pdf','png'),
+                      dpi = 300)
 library(gerr) 
 library(glmnet)
 set.seed(1887)
@@ -113,7 +116,9 @@ length(binomRes$selected_pathways_names)
 plot(binomRes$model)
 ```
 
-I think that the instability (at least partially) comes from the fact that the binomial deviance is not strictly convex but with two local minima (see an example above). The manuscript describing the `glmnet` package [@friedman_regularization_2010] discussed several important implementation details that may be relevant for this observation, among others given that $p >> N$, $\lambda$ cannot be run all down to zero, and that the Newton algorithm is not guaranteed to converge without step-size optimization, and the code in `glmnet` does not implement any checks for divergence. I believe that the observation of instability in the case of logistic regression deserves further study. For the current implementation, I believe it makes sense to stick to the simply linear regression for simplicity and robustness.
+I think that the instability (at least partially) comes from the fact that the binomial deviance is not strictly convex but with two local minima (see an example above). Interestingly, if the function `cv.glmnet` is repeatedly called, after three times only one local minima is represent, where three gene-sets are identified, two out of which are identical with the Gaussian fitting results. This could potentially point to a convergence problem.
+
+The manuscript describing the `glmnet` package [@friedman_regularization_2010] discussed several important implementation details that may be relevant for this observation, among others given that $p >> N$, $\lambda$ cannot be run all down to zero, and that the Newton algorithm is not guaranteed to converge without step-size optimization, and the code in `glmnet` does not implement any checks for divergence. I believe that the observation of instability in the case of logistic regression deserves further study. For the current implementation, I believe it makes sense to stick to the simply linear regression for simplicity and robustness.
 
 ## Prediction performance and leading-edge genes
 

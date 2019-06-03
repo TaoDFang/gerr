@@ -52,30 +52,45 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
   module_labels[module_common_genes] <- 1
   
   if(length(module_common_genes)<=1) {
-    warning("Not enough genes in the set of genes of interest. NULL is returned")
+    warning("Not enough genes in the set of genes of interest. NULL is returned.\n")
     return(NULL)
   }
   
-  cvfit <- cv.glmnet(gene_pathway_matrix,
+  cvfit <- try(cv.glmnet(gene_pathway_matrix,
                   module_labels,alpha =alpha, 
                   family=family, lambda=lambda,
                   lower.limits=0,
-                  ...)
+                  ...))
+
+  if(class(cvfit)=="try-error") {
+    warning("cv.glmnet failed. The error and the model input is returned for debugging purposes.\n")
+    res <- list(model=cvfit,
+                x=gene_pathway_matrix,
+                y=module_labels)
+    return(res)
+  }
   
+  passParams <- list(...)
+  hasIntercept <- is.null(passParams$intercept) || (!is.null(passParams$intercept) & passParams$intercept)
   coef <- coef(cvfit, s = "lambda.min")
-  non0index <- coef@i[-1]   #remove intercept
-  non0coef <- coef@x[-1]
-  selected_index <- non0index[which(non0coef>0)]
+  non0index <- coef@i
+  non0coef <- coef@x
+  if(hasIntercept) { #remove intercept
+    non0index <- non0index[-1]   
+    non0coef <- non0coef[-1]
+  }
+  isPosCoef <- non0coef>0
+  selected_index <- non0index[isPosCoef]
   selected_pathways <- all_pathways[selected_index]
-  selected_coef <- non0coef[which(non0coef>0)]
+  selected_coef <- non0coef[isPosCoef]
   names(selected_coef) <- selected_pathways
   
-  if(length(selected_pathways)>0){
-    fisher_exact_test_results=fisher_exact_test(selected_pathways,module_common_genes,gene_pathway_matrix=NULL )
-    selected_pathways_fisher_pvalue=fisher_exact_test_results$selected_pathways_fisher_pvalue
-    selected_pathways_num_genes=fisher_exact_test_results$selected_pathways_num_genes
+  if(any(isPosCoef)){
+    fisher_exact_test_results <- fisher_exact_test(selected_pathways,module_common_genes,gene_pathway_matrix=gene_pathway_matrix)
+    selected_pathways_fisher_pvalue <- fisher_exact_test_results$selected_pathways_fisher_pvalue
+    selected_pathways_num_genes <- fisher_exact_test_results$selected_pathways_num_genes
     
-    new_order=order(selected_coef,decreasing = TRUE)
+    new_order <- order(selected_coef,decreasing = TRUE)
     
     res <- list(selected_pathways_names=from_id2name(selected_pathways=names(selected_coef[new_order])),
                 selected_pathways_coef=selected_coef[new_order],
@@ -86,7 +101,7 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
                 y=module_labels)
 
   } else {
-    warning("No selected gene-sets with the given parameter set. NULL is returned.")
+    warning("No selected gene-sets with the given parameter set. NULL is returned.\n")
     res <- list(model=cvfit, 
                 x=gene_pathway_matrix,
                 y=module_labels)

@@ -8,5 +8,8 @@ gerr.Rproj
 *.log
 *.pdf
 
+vignettes/figures
+
+
 doc
 Meta

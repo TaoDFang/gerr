@@ -15,7 +15,7 @@ A list of GO sub-root or REACTOME root names for provided pathways.
 }
 \description{
 If you use the default pathway databases(GO Ontologyand REACTOME),this function can help you to get pathways
-names from pathways IDs.
+names from pathways IDs. If not found, the gene-set name is used.
 }
 \examples{
 from_id2name((selected_pathways=list(c("GO:0032991#GO:0044425#GO:0044464"),"R-HSA-5357801")))

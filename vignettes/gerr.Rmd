@@ -11,7 +11,11 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,
+                      message=FALSE,
+                      fig.path = "figures/",
+                      dev = c('pdf','png'),
+                      dpi = 300)
 options(tinytex.verbose = TRUE)
 ```
 

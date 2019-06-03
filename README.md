@@ -1,4 +1,4 @@
-# gerr: Gene-set module annotation or gene-set enrichment within a regression based framework
+# gerr: gene-set enrichment with regularized regression
 
 # Introduction
 
