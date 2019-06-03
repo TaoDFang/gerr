@@ -3,7 +3,7 @@ title: "Gene-set enrichment with regularized regression: simulation studies"
 author: "Jitao David Zhang and Tao Fang"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 params:
-  fullSimulation: FALSE
+  overwriteCache: FALSE
 output: 
   BiocStyle::pdf_document:
     toc: true
@@ -29,7 +29,6 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.width=5, fig.height=5)
 library(gerr) 
 library(glmnet)
-library(msigdbr)
 library(MASS)
 library(stats)
 library(ggplot2)
@@ -37,33 +36,18 @@ library(scales)
 set.seed(1887)
 ```  
 
-```{r fromRibiosUtils, echo=FALSE, include=FALSE}
-pairwiseDist <- function(list, fun=jaccardIndex) {
-  len <- length(list)
-  res <- matrix(0, len, len)
-  colnames(res) <- rownames(res) <- names(list)
-  vals <- sapply(seq(from = 1, to = len - 1), function(i) {
-    sapply(seq(from = i + 1, to = len), function(j) {
-      do.call(fun, list(list[[i]], list[[j]]))
-    })
-  })
-  vv <- unlist(vals)
-  res[lower.tri(res)] <- vv
-  res <- t(res) + res
-  diag(res) <- do.call(fun, list(list[[1]], list[[1]]))
-  return(res)
-}
-overlapCoefficient <- function(x,y, checkUniqueNonNA=FALSE) {
-  if(checkUniqueNonNA) {
-    x <- uniqueNonNA(x)
-    y <- uniqueNonNA(y)
+```{r wkdir, echo=FALSE, include=FALSE}
+guessGerrRootDir <- function() {
+  if(file.exists("./gerr-simulation.Rmd")) {
+    gerrRoot <- ".."
+  } else if (file.exists("DESCRIPTION") && file.exists("data")) {
+    gerrRoot <- "."
+  } else {
+    stop("Run the vignette either in root dir of gerr or in vignettes/")
   }
-  res <- length(intersect(x,y))/pmin(length(x), length(y))
-  return(res)
+  return(gerrRoot)
 }
-pairwiseOverlapCoefficient <- function(list) {
-  return(pairwiseDist(list, fun=overlapCoefficient))
-}
+gerrRootDir <- guessGerrRootDir()
 ```
 
 # Data used for simulation
@@ -71,20 +55,35 @@ pairwiseOverlapCoefficient <- function(list) {
 We wish to use real-world gene-sets that are commonly used by the community for the simulation study for `gerr`, because synthesized gene-sets may have distributions of sizes, defined by the number of unique genes and overlapping patterns that depart from real-world gene-sets. Therefore we decided to use curated gene-sets provided by the MSigDB database (Category `C2`) for this purpose. These gene-sets are curated from online pathway databases, publications in PubMed, and collected knowledge of domain experts. Therefore they are not structured in tree structures like gene-sets from Gene Ontology (GO) or from the Reactome pathway database. 
 
 ```{r gmt}
-simTibble <- msigdbr::msigdbr(species="Homo sapiens",
-                             category = c("C2"))
-simGenesAll <- with(simTibble, tapply(human_gene_symbol, gs_name, unique))
-simGenesets <- sample(simGenesAll, 500)
+# gerrRootDir is the root directory of the gerr package
+simGenesetsRdata <- file.path(gerrRootDir, "data/simGenesets.RData")
+if(!file.exists(simGenesetsRdata)) {
+  library(msigdbr)
+  simTibble <- msigdbr::msigdbr(species="Homo sapiens",
+                                category = c("C2"))
+  simGenesAll <- with(simTibble, tapply(human_gene_symbol, gs_name, unique))
+  simGenesets <- sample(simGenesAll, 500)
+  save(simGenesets, file=simGenesetsRdata)
+} else {
+  load(simGenesetsRdata)
+}
 simLen <- sapply(simGenesets, function(x) length(x))
+
+# bgGenes is a vector of unique background genes
+bgGenes <- unique(unlist(simGenesets))
+# gsMatrix is a gene by gene-set matrix
+gsMatrix <- Matrix(sapply(simGenesets, function(x) as.integer(bgGenes %in% x)),
+                   sparse=TRUE,
+                   dimnames=list(bgGenes, names(simGenesets)))
 ```
 
-The gene-sets are retrieved using the `msigdbr` package. For the purpose of simulation, we randomly sample 500 gene-sets from all gene-sets of the category C2 (N=`r length(simGenesets)`). 
+The gene-sets were retrieved using the `msigdbr` package. For the purpose of simulation, we randomly sample 500 gene-sets from all gene-sets of the category C2 (N=`r length(simGenesets)`). We resave the data in the `gerr` package so that future updates in either the MSigDB database or the `msigdbr` package will affect the simulation results.
 
 ## Distribution of gene-set sizes
 
 The histogram below shows the distribution of gene-set size in the sub-sampled set of gene-sets.
 
-```{r sizeDist}
+```{r sizeDist, fig.width=6, fig.height=4}
 {
   hist(simLen, xlab="Number of unique genes", 
        breaks=50, freq = FALSE,
@@ -99,8 +98,57 @@ The median gene-set size is `r median(simLen)`, with heavy tail on the right sid
 
 Next, we investigate the degree of redundancy among these gene-sets. We use the overlap coefficient, defined by $|A \cap B|/min(|A|,|B|)$ between two sets $A$ and $B$, to measure this.
 
-```{r overlapDist}
-simPairwiseOverlap <- pairwiseOverlapCoefficient(simGenesets)
+When the gene-sets are represented as a dichotomous matrix, pairwise overlap coefficients can be calculated efficiently by using matrix operations. The functions below are extracted from the [ribiosUtils](https://github.com/Accio/ribios/tree/master/ribiosUtils) package, which is currently being submitted to the CRAN repository.
+
+```{r pairwiseOverlapCoefficient}
+uniqueNonNA <- function(x) {
+  x <- x[!is.na(x)]
+  res <- unique(x)
+  return(res)
+}
+columnOverlapCoefficient <- function(x, y=NULL) {
+  if(!is.matrix(x)) x <- as.matrix(x)
+  if(is.null(y)) y <- x
+  if(is.matrix(y)) y <- as.matrix(y)
+  
+  stopifnot(nrow(x)==nrow(y))
+  storage.mode(x) <- storage.mode(y) <- "integer"
+  
+  tmatProd <- t(x) %*% y
+  xCount <- apply(x, 2, function(xx) sum(xx!=0))
+  yCount <- apply(y, 2, function(yy) sum(yy!=0))
+  tmatPmin <- outer(xCount, yCount, pmin)
+  res <- tmatProd/tmatPmin
+  if(is.null(y)) {
+    diag(res) <- 1L
+  }
+  dimnames(res) <- list(colnames(x), colnames(y))
+  return(res)
+} 
+listOverlapCoefficient <- function(x, y=NULL, checkUniqueNonNA=TRUE) {
+  if(checkUniqueNonNA) {
+    x <- lapply(x, uniqueNonNA)
+    if(!is.null(y)) {
+      y <- lapply(y, uniqueNonNA)
+    }
+  }
+
+  if(is.null(y)) {
+    elements <- unique(unlist(x))
+    mat <- sapply(x, function(xx) as.integer(elements %in% xx))
+    res <- columnOverlapCoefficient(mat)
+  } else {
+    elements <- unique(c(unlist(x), unlist(y)))
+    mat1 <- sapply(x, function(xx) as.integer(elements %in% xx))
+    mat2 <- sapply(y, function(xx) as.integer(elements %in% xx))
+    res <- columnOverlapCoefficient(mat1, mat2)
+  }
+  return(res)
+}
+```
+
+```{r overlapDist, fig.width=6, fig.height=4}
+simPairwiseOverlap <- columnOverlapCoefficient(gsMatrix)
 utOver <- simPairwiseOverlap[upper.tri(simPairwiseOverlap, diag=FALSE)]
 {
   hist(utOver, xlab="Pairwise overlapping cofficient between gene-sets", 
@@ -124,15 +172,6 @@ We calculated the overlap coefficient for all unique pairs of gene-sets, and its
 # Model verification
 
 We first verify that gene-set enrichment with regularized regression (`gerr`) performs as expected using the simplest simulation that is possible: we assign genes of one gene-set as GOI, and test whether we can recover the gene-set using `gerr`.
-
-First we convert the gene-sets into gene-pathway matrix required by `gerr::regression_selected_pathways`.
-
-```{r gsMatrix}
-bgGenes <- unique(unlist(simGenesets))
-gsMatrix <- Matrix(sapply(simGenesets, function(x) as.integer(bgGenes %in% x)),
-                   sparse=TRUE,
-                   dimnames=list(bgGenes, names(simGenesets)))
-```
 
 ## A small-scale verification with few cases
 
@@ -160,7 +199,7 @@ There are two cases where two gene-sets are returned. The code below examine how
 mt1Return <- foundCounts>1
 mt1ReturnOverlapCoef <- sapply(which(mt1Return), function(i) {
   selGnames <- names(selRes[[i]]$selected_pathways_names)
-  poe <- pairwiseOverlapCoefficient(simGenesets[selGnames])
+  poe <- listOverlapCoefficient(simGenesets[selGnames])
   mean(poe[upper.tri(poe, diag=FALSE)])
 })
 print(mt1ReturnOverlapCoef)
@@ -189,34 +228,48 @@ verificate <- function(genesets, gsMatrix, index) {
 }
 ```
 
-```{r verificateAll, fig.width=4, fig.height=4}
-if(params$fullSimulation) {
+```{r verificateAll}
+modelVerifRdata <- file.path(gerrRootDir, 
+                             "data/modelVerification.RData")
+if(!file.exists(modelVerifRdata) || params$overwriteCache) {
   system.time(verifRes <- verificate(simGenesets, 
                                      gsMatrix, 
                                      index=seq(along=simGenesets)))
-  summary(verifRes$isRecovered) ## all recovered
-  verifSelCount <- sapply(verifRes$selInd, length)
-  ## in 44 cases of 500 gene-sets, more than one gene-set was selected
-  summary(verifSelCount>1) 
-  verifMt1AvgOe <- sapply(which(verifSelCount>1), function(i) {
-    selGnames <- names(verifRes$results[[i]]$selected_pathways_names)
-    poe <- pairwiseOverlapCoefficient(simGenesets[selGnames])
-    mean(poe[upper.tri(poe, diag=FALSE)])
-  })
-  par(mar=c(3,3,2,1), mgp=c(1.5,0.5,0)); boxplot(verifMt1AvgOe, col="lightblue",
-       main="Similar gene-sets are co-selected",
-       xlab="Simulations when >1 gene-set is returned",
-       ylab="Mean pairwise overlap coefficient")
+  verifKeyRes <- list(isRecovered = verifRes$isRecovered,
+                      selInd = verifRes$selInd,
+                      selected_pathways_names=lapply(verifRes$results,
+                                                    function(x) x$selected_pathways_names))
+  save(verifKeyRes, file=modelVerifRdata)
+} else {
+  load(modelVerifRdata)
 }
+```
+
+```{r verficateRes, fig.width=4, fig.height=4}
+summary(verifKeyRes$isRecovered) ## all recovered
+verifSelCount <- sapply(verifKeyRes$selInd, length)
+## in 44 cases of 500 gene-sets, more than one gene-set was selected
+summary(verifSelCount>1) 
+verifMt1AvgOe <- sapply(which(verifSelCount>1), function(i) {
+  selGnames <- names(verifKeyRes$selected_pathways_names[[i]])
+  poe <- listOverlapCoefficient(simGenesets[selGnames])
+  mean(poe[upper.tri(poe, diag=FALSE)])
+})
+par(mar=c(3,3,2,1), 
+    mgp=c(1.5,0.5,0)); boxplot(verifMt1AvgOe, 
+                               col="lightblue",
+                               main="Similar gene-sets are co-selected",
+                               xlab="Simulations when >1 gene-set is returned",
+                               ylab="Mean pairwise overlap coefficient")
 ```
 
 We verify that all gene-sets that were assigned as genes of interest was successfully recovered. Int 44 out of 500 gene-sets, more than one gene-set was selected by `gerr`. The average pairwise overlap coefficient between multiple selected genesets is quite high (median 0.86, MAD 0.123). It suggests that `gerr` is able to identify gene-sets that are highly enriched among many gene-sets.
 
 # Simulations based on a probabilistic model
 
-Next we assume that the set of GOI is constructed by a probabilistic model. Specifically, we assume a generative model of the set of GOI in the following form: $$p_{g \in G} = \sum_{\omega} p_{g|\omega}p_{\omega} + p_{g_{n}}$$.
+Next we test the performance of `gerr` using a probabilistic framework. Specifically, we assume a generative model of GOI in the following form: $$p_{g \in G} = \sum_{\omega} p_{g|\omega}p_{\omega} + p_{g_{n}}$$.
 
-The model specifies that the probability that a gene $g$ is a member of the set $G$ is modelled by the probability of the gene-set $\omega$ contributes to GOI, expressed as $p_{\omega}$, multiplied by the probability that $g$ is selected to contributed to GOI given that $\omega$ contributes to GOI, summed over all genet-sets, and then adding the probability $p_{g_{i}}$ that models the probability that the gene $g$ contributes to GOI independent of its associations with gene-sets, which we may observe as a noise term (and therefore the subscript $n$). 
+The model specifies that the probability that a gene $g$ is a member of the set $G$ is modelled by the probability of the gene-set $\omega$ contributes to GOI, expressed as $p_{\omega}$, multiplied by the probability that $g$ is selected to contributed to GOI given that $\omega$ contributes to GOI, summed over all genet-sets, and then adding the probability $p_{g_{i}}$ that models the probability that the gene $g$ contributes to GOI independent of its associations with gene-sets. The two parts on the right side of the equation can be observed as a gene-set-dependent and a noise term (and therefore the subscript $n$) respectively. Apparently, $p_{g \in G}$ should be located between $[0,1]$. 
 
 In the following simulations, we assume that $p_{\omega}$ follows a binomial distribution that is specified by the parameter $p_{gs}$. For simplicity, we model $p_{g|\omega}$ as a binomial distribution specified by the parameter $p_{g}$ and assume that the same parameter applies to all selected gene-sets. Furthermore, we assume that $p_{g_{n}}$ is modelled by a small number $p_n$ that varies in a given range, e.g. from $10^{-4}$ to $10^{-1}$, and the value applies to all genes.
 
@@ -263,12 +316,8 @@ probSim <- function(p_gs=0.01, p_g=0.5, p_n=1E-3, seed=1L) {
   probFpr <- length(probFp)/(length(probFp) + length(probTn))
   probPpv <- length(probTp)/(length(probTp) + length(probFp))
   probF1 <- 2 * probPpv * probTpr / (probPpv + probTpr)
-  probMeanOe <- sapply(probFp, function(fpHit) {
-    sapply(probTp, function(tpHit) {
-      overlapCoefficient(simGenesets[[tpHit]],
-                         simGenesets[[fpHit]])
-    })
-  })
+  probMeanOe <- listOverlapCoefficient(simGenesets[probFp], 
+                                       simGenesets[probTp])
   ## special cases where there are no positives
   nTP <- length(probTp)
   nFP <- length(probFp)
@@ -344,12 +393,12 @@ The results can be interpreted as follows.
 
 * The true-positive rate (TPR) of the `gerr` method is 1.0, namely all gene-sets that were selected to contribute to GOI are successfully recovered. By comparison, TPR of one-sided Fisher's exact test and Benjamini-Hochberg FDR correction (FET+FDR) is 0.92.
 * The false-positive rate (FPR) of the `gerr` method is 0.086, namely among all gene-sets that were *not* selected to contribute to GOI, about 9% of them are selected by `gerr`. In contrast, the FPR of FET+FDR is about 0.16.
-* F1 score, the harmonic mean of precision and sensitivity, of the `gerr` method is higher than that of FET+FDR.
+* $F_1$ score, the harmonic mean of precision and sensitivity, of the `gerr` method is higher than that of FET+FDR.
 * The value `medTpFpMaxOe` deserves explanation. We know that if two gene-sets share common genes, they may be both selected by the regularized regression procedure as relevant features, even if only one of the two gene-sets was selected to contribute to GOI. That means the false-positive hits may make still sense. To quantify this aspect, we calculated pairwise overlap coefficients between true and false positive hits, and report the median value of maximum overlap coefficient of each false positive hit. The larger the number is, the stronger is the evidence that the redundancy between gene-sets may cause false-positive hits.
 
 ## A full scale simulation with the probabilistic model and results interpretation
 
-Below we perform the full-scale simulation with the probabilistic model, using a variety of parameter combinations.
+Below we perform the full-scale simulation with the probabilistic model, using a variety of combinations of the parameters $p_{g_{s}}$, $p_g$, and $p_n$. For each parameter set, five independent simulations are run. The median values of the five simulation runs are reporteed for each measure (true-positive rate, false-positive rate, *etc.*). 
 
 ```{r fullProbSim, warning=FALSE}
 p_gs_cand <- c(0.002, 0.005, 0.01,
@@ -363,7 +412,9 @@ probSimParams <- do.call(rbind, list(probSimParamsOneRep,
                                          probSimParamsOneRep,
                                          probSimParamsOneRep)) ## five replicates per condition
 probSimParams <- cbind(probSimParams, seed=1:nrow(probSimParams))
-if(params$fullSimulation) {
+probSimRdata <- file.path(gerrRootDir, 
+                          "data/modelProbSimulation.RData")
+if(!file.exists(probSimRdata) || params$overwriteCache) {
   system.time(fullProbSimRes <- apply(probSimParams, 1, function(x) {
     probSim(p_gs=x[1], p_g=x[2], p_n=x[3], seed=x[4])
   }))
@@ -372,9 +423,9 @@ if(params$fullSimulation) {
                                  list(fullProbSimResDf$p_gs, 
                                       fullProbSimResDf$p_g, 
                                       fullProbSimResDf$p_n), median)
-  save(fullProbSimResDf, avgFullProbSimRes, file="./fullProbSim.RData")
+  save(avgFullProbSimRes, file=probSimRdata)
 } else {
-  load("./fullProbSim.RData")
+  load(probSimRdata)
 }
 ```
 
