@@ -18,7 +18,7 @@ vignette: >
 
 In the manuscript *Gene-set Enrichment with Regularized Regression* (`gerr` in short), we propose using regularized regression to model the relationship between $Y$, a dichotomous dependent variable indicating membership of genes in a set of genes of interest (GOI hereafter), and $\Omega$, a matrix of dichotomous variables indicating membership of genes in gene-sets that are potentially overlapping or even identical with each other.
 
-In this document, we perform simulation studies to demonstrate the sensitivity and specificity of the `gerr` method, using the software package of the same name that we published along with the manuscript and the elastic net implemented in the R software package `glmnet`. 
+In this document, we perform simulation studies to demonstrate the sensitivity and specificity of the `gerr` method, using the software package of the same name that we published along with the manuscript and the elastic net implemented in the R software package `glmnet`. Throughout the analysis, we will use the default parameters of `gerr`, using the elastic net of Gaussian-family linear regression, with $\alpha=0.5$.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
@@ -453,10 +453,14 @@ if(!file.exists(probSimRdata) || params$overwriteCache) {
     probSim(p_gs=x[1], p_g=x[2], p_n=x[3], seed=x[4])
   }))
   fullProbSimResDf <- as.data.frame(t(fullProbSimRes))
-  avgFullProbSimRes <- aggregate(fullProbSimResDf,
-                                 list(fullProbSimResDf$p_gs, 
-                                      fullProbSimResDf$p_g, 
-                                      fullProbSimResDf$p_n), median)
+  ## due to sampling, in some cases no gene-set is selected at all 
+  ## to contribute to GOI. These situations are excluded.
+  posFullProbSimResDf <- with(fullProbSimResDf,
+                           fullProbSimResDf[nTP.gerr+nFN.gerr!=0,])
+  avgFullProbSimRes <- aggregate(posFullProbSimResDf,
+                                 list(posFullProbSimResDf$p_gs, 
+                                      posFullProbSimResDf$p_g, 
+                                      posFullProbSimResDf$p_n), median)
   save(avgFullProbSimRes, file=probSimRdata)
 } else {
   load(probSimRdata)
@@ -484,7 +488,8 @@ tprGerr <- ggplot(avgFullProbSimRes,
                   aes(x=factor(p_gs), y=factor(p_g), fill=TPR.gerr)) +
   facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
-  scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, midpoint=0.5,
+  scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, 
+                       midpoint=0.5,
                        name="TPR") +
   ggtitle("True positive rate of gerr")+
   xlab(expression(p[gs])) + ylab(expression(p[g]))
@@ -493,7 +498,7 @@ print(tprGerr)
 
 It seems that `gerr` in general has high sensitivity, even when the noise probabiliy is as high as 0.1 (namely each gene has the probability of $0.1$ to be selected as a gene of interest, independent whether it is associated with any gene-set or not). The sensitivity is only low when very few genes in the gene-set contribute to GOI (say less than 10%), which makes sense intuitively.
 
-The lack of sensitivity in the case of $p_{gs}<0.005$ is because we have only 500 gene-sets, and in random sampling, there are cases where no gene-set was selected to contribute to GOI.
+The cell $p_{gs}=0.002, p_{g}=0.5, and p_{n}=0.05$ is missing because in five runs of simulation, the sampling procedure did not pick any gene-set to contribute to contribute to GOI.
 
 The plot below visualizes the pattern of TPR in case of the FET+FDR procedure.
 
@@ -515,7 +520,7 @@ The difference of TPR between `gerr` and `FET+FDR` of matching parameter set is 
 ```{r tprGerrVsFF, fig.width=7.5, fig.height=5}
 diffLowCol <- "#E6AB02"
 diffMidCol <- "#CCCCCC"
-diffHighCol <- "#D95F02"
+diffHighCol <- "#4DAF4A"
 tprDiff <- ggplot(avgFullProbSimRes, aes(x=factor(p_gs), y=factor(p_g), fill=TPR.gerr-TPR.ff)) +
   facet_wrap(~p_n) +
   geom_tile() +
