@@ -173,4 +173,3 @@ get_steps=function(selected_pathways){
   names(steps)=selected_pathways
   return(steps)
 }
-
