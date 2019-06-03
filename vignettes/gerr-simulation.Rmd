@@ -33,6 +33,9 @@ library(MASS)
 library(stats)
 library(ggplot2)
 library(scales)
+library(dplyr)
+library(grid)
+library(gridExtra)
 set.seed(1887)
 ```  
 
@@ -563,9 +566,9 @@ if(!file.exists(probSimRdata) || params$overwriteCache) {
 
 We investigate the simulation results by visualizing true positive rate, false positive rate, and $F_{1}$ scores of the `gerr` and FET+FDR procedure.
 
-## True positive rate (TPR)
+## Sensitivity, or true positive rate (TPR)
 
-The plot below visualizes how true positive rate (TPR) varies by the probability that each gene-set contributes to GOI ($p_{gs}$) and the probability of genes in each gene-set contribute to GOI ($p_g$), conditional on the noise probability $p_n$. Five independent simulations were performed for each parameter set, and the median value is used for visualization.
+The plot below visualizes how sensitivity, or true positive rate (TPR) varies by the probability that each gene-set contributes to GOI ($p_{gs}$) and the probability of genes in each gene-set contribute to GOI ($p_g$), conditional on the noise probability $p_n$. Five independent simulations were performed for each parameter set, and the median value is used for visualization.
 
 ```{r tprGerr, fig.width=7.5, fig.height=5}
 lowCol <- "#004495"
@@ -582,7 +585,7 @@ tprGerr <- ggplot(avgFullProbSimRes,
   geom_tile() +
   scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, 
                        midpoint=0.5,
-                       name="TPR") +
+                       name="Sensitivity") +
   ggtitle("True positive rate of gerr")+
   xlab(expression(p[gs])) + ylab(expression(p[g]))
 print(tprGerr)
@@ -600,7 +603,7 @@ tprFF <- ggplot(avgFullProbSimRes,
   facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
   scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol,  midpoint=0.5,
-                       name="TPR") +
+                       name="Sensitivity") +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("True positive rate of FET+FDR") +
   xlab(expression(p[gs])) + ylab(expression(p[g]))
@@ -614,10 +617,11 @@ diffLowCol <- "#E6AB02"
 diffMidCol <- "#CCCCCC"
 diffHighCol <- "#4DAF4A"
 tprDiff <- ggplot(avgFullProbSimRes, aes(x=factor(p_gs), y=factor(p_g), fill=TPR.gerr-TPR.ff)) +
-  facet_wrap(~p_n) +
+  facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
   scale_fill_gradient2(low=diffLowCol, mid=diffMidCol, high=diffHighCol, midpoint=0,
-                       name=expression(Delta~TPR)) +
+                       limits=c(-0.5, 0.5), oob=scales::squish,
+                       name=expression(Delta~Sensitivity)) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("True positive rate difference (gerr - FET+FDR)") +
   xlab(expression(p[gs])) + ylab(expression(p[g]))
@@ -626,17 +630,18 @@ print(tprDiff)
 
 It seems that when $p_{g}$, the probability of genes in a gene-set to contribute to GOI, is low, and when the noise ($p_{n}$) is strong, `gerr` has higher sensitivity (true-positive rate) than FET+FDR. Otherwise, when $p{g}$ is high, both `gerr` and FET+FDR has high sensitivity that is near 1.
 
-## False positive rate (FPR)
+## Specificity, or 1-false positive rate (FPR)
 
-Next we examine false positive rate (FPR), which equals 1-specificity. First, we visualize the variation precision of `gerr` by varying parameters.
+Next we examine specificity, which equals 1-false-positive rate First, we visualize the variation precision of `gerr` by varying parameters.
 
 ```{r fprGerr, fig.width=7.5, fig.height=5}
 fprGerr <- ggplot(avgFullProbSimRes, 
-                  aes(x=factor(p_gs), y=factor(p_g), fill=FPR.gerr)) +
+                  aes(x=factor(p_gs), y=factor(p_g), fill=1-FPR.gerr)) +
   facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
-  scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, name="FPR",
-                       limits=c(0,0.5), oob=scales::squish) +
+  scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, name="Specificity",
+                       midpoint = 0.5,
+                       limits=c(0,1), oob=scales::squish) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("False positive rate of gerr") +
   xlab(expression(p[gs])) + ylab(expression(p[g]))
@@ -649,11 +654,12 @@ Next we reveal how FPR change in the case of FET+FDR.
 
 ```{r fprFF, fig.width=7.5, fig.height=5}
 fprFF <- ggplot(avgFullProbSimRes, 
-                aes(x=factor(p_gs), y=factor(p_g), fill=FPR.ff)) +
+                aes(x=factor(p_gs), y=factor(p_g), fill=1-FPR.ff)) +
  facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
-  scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, name="FPR", 
-                       limits=c(0,0.5), oob=scales::squish) +
+  scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, name="Specificity", 
+                       midpoint = 0.5,
+                       limits=c(0,1), oob=scales::squish) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("False positive rate of FET+FDR") +
   xlab(expression(p[gs])) + ylab(expression(p[g]))
@@ -664,13 +670,13 @@ The plot below visualizes the difference of FPR.
 
 ```{r fprDiff, fig.height=5, fig.width=7.5}
 fprDiff <- ggplot(avgFullProbSimRes, 
-                  aes(x=factor(p_gs), y=factor(p_g), fill=FPR.gerr - FPR.ff)) +
+                  aes(x=factor(p_gs), y=factor(p_g), fill=(1-FPR.gerr) - (1-FPR.ff))) +
   facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
   scale_fill_gradient2(low=diffLowCol, mid=diffMidCol, high=diffHighCol,
                        midpoint = 0,
                        limits=c(-0.4, 0.4), oob=scales::squish,
-                       name=expression(Delta~FPR)) +
+                       name=expression(Delta~Specificity)) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("False positive ratedifference: gerr - FET+FDR") +
   xlab(expression(p[gs])) + ylab(expression(p[g]))
@@ -689,7 +695,7 @@ f1Gerr <- ggplot(avgFullProbSimRes,
   facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
   scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, 
-                       name=expression(F[1]), 
+                       name=expression(F[1]~score), 
                        limits=c(0,1), oob=scales::squish) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("F1 score of gerr") +
@@ -707,7 +713,7 @@ f1FF <- ggplot(avgFullProbSimRes,
   facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
   scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, 
-                       name=expression(F[1]), limits=c(0,1), 
+                       name=expression(F[1]~score), limits=c(0,1), 
                        oob=scales::squish) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("F1 score of FET+FDR") +
@@ -724,7 +730,7 @@ f1Diff <- ggplot(avgFullProbSimRes,
   geom_tile() +
   scale_fill_gradient2(low=diffLowCol, mid=diffMidCol, high=diffHighCol, 
                        midpoint = 0,
-                       name=expression(Delta~F[1]), 
+                       name=expression(Delta~F[1]~score), 
                        limits=c(-1, 1), oob=scales::squish) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("F1 score difference: gerr - FET+FDR") +
@@ -747,6 +753,54 @@ ggplot(avgFullProbSimRes,
 ```
 
 -->
+
+# Results of model verification and performance evaluation in one figure
+
+```{r oneFigure, echo=FALSE, fig.width=14, fig.height=9}
+myGrob <- function(text) {
+  textGrob(text, x=unit(0, "npc"), y=unit(1, "npc"), just=c("left", "top"),
+           gp=gpar(col="black", fontsize=18))
+}
+pA <- arrangeGrob(veriFpPlot,
+                  top=myGrob("A"))
+pB <- arrangeGrob(oeDenPlot,
+                  top=myGrob("B"))
+pC <- arrangeGrob(tprGerr %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
+                    ggtitle("gerr"),
+                  top=myGrob("C"))
+pD <- arrangeGrob(fprGerr %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
+                    ggtitle("gerr"),
+                  top=myGrob("D"))
+pE <- arrangeGrob(f1Gerr %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+%
+                    ggtitle("gerr"),
+                  top=myGrob("E"))
+pF <- arrangeGrob(tprFF %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
+                    ggtitle("FET+FDR"),
+                  top=myGrob("F"))
+pG <- arrangeGrob(fprFF %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+%
+                    ggtitle("FET+FDR"),
+                  top=myGrob("G"))
+pH <- arrangeGrob(f1FF %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
+                    ggtitle("FET+FDR"),
+                  top=myGrob("H"))
+pI <- arrangeGrob(tprDiff %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
+                    ggtitle(""),
+                  top=myGrob("I"))
+pJ <- arrangeGrob(fprDiff %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
+                    ggtitle(""),
+                  top=myGrob("J"))
+pK <- arrangeGrob(f1Diff %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
+                    ggtitle(""),
+                  top=myGrob("K"))
+layoutMatrix <- matrix(c(NA,3,4,5,
+                         1,3,4,5,
+                         1,6,7,8,
+                         2,6,7,8,
+                         2,9,10,11,
+                         NA,9,10,11), byrow=TRUE, ncol=4)
+grid.arrange(grobs=list(pA, pB, pC, pD, pE, pF, pG, pH, pI, pJ, pK),
+             layout_matrix=layoutMatrix)
+```
 
 # Conclusions
 
