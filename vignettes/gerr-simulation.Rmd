@@ -349,7 +349,7 @@ veriFpPlot <- ggplot(verifFpCounts,
 print(veriFpPlot)
 ```
 
-The `gerr` returned no false-positive hits in `r sprintf("%1.1f%%", mean(gerrFpCounts ==0)*100)` cases, and otherwise only returned no more than two false-positive hits. In contrast, FET+FDR very frequently returned a large number of false-positive hits.
+The `gerr` returned no false-positive hits in `r sprintf("%1.1f%%", mean(gerrFpCounts ==0)*100)` cases, and otherwise only returned no more than two false-positive hits. In contrast, FET+FDR very frequently returned a large number of false-positive hits (median `r median(fetFdrFpCounts)`, mad `r mad(fetFdrFpCounts)`).
 
 We believe that the false-positive hits of `gerr` are likely caused by redundancy in gene-sets. Therefore we show below the mean overlap coefficient between false-positive and true-positive hits returned by `gerr`. As a comparison, we show the value also for hits returned by FET+FDR and for randomly selected gene-sets.
 
@@ -404,7 +404,7 @@ In short, with a very simple verification procedure, we verify that by using `ge
 
 Next we test the performance of `gerr` using a probabilistic framework. Specifically, we assume a generative model of GOI in the following form: $$p_{g \in G} = \sum_{\omega} p_{g|\omega}p_{\omega} + p_{g_{n}}$$.
 
-The model specifies that the probability that a gene $g$ is a member of the set $G$ is modelled by the probability of the gene-set $\omega$ contributes to GOI, expressed as $p_{\omega}$, multiplied by the probability that $g$ is selected to contributed to GOI given that $\omega$ contributes to GOI, summed over all genet-sets, and then adding the probability $p_{g_{i}}$ that models the probability that the gene $g$ contributes to GOI independent of its associations with gene-sets. The two parts on the right side of the equation can be observed as a gene-set-dependent and a noise term (and therefore the subscript $n$) respectively. Apparently, $p_{g \in G}$ should be located between $[0,1]$. 
+The model specifies that the probability that a gene $g$ is a member of the set $G$ is modelled by the probability of the gene-set $\omega$ contributes to GOI, expressed as $p_{\omega}$, multiplied by the probability that $g$ is selected to contributed to GOI given that $\omega$ contributes to GOI, summed over all genet-sets, and then adding the term $p_{g_{n}}$ that models the probability that the gene $g$ contributes to GOI independent of its associations with gene-sets. The two parts on the right side of the equation can be observed as a gene-set dependent and a noise term (therefore the subscript $n$) respectively. Apparently, $p_{g \in G}$ should be located between $[0,1]$. 
 
 In the following simulations, we assume that $p_{\omega}$ follows a binomial distribution that is specified by the parameter $p_{gs}$. For simplicity, we model $p_{g|\omega}$ as a binomial distribution specified by the parameter $p_{g}$ and assume that the same parameter applies to all selected gene-sets. Furthermore, we assume that $p_{g_{n}}$ is modelled by a small number $p_n$ that varies in a given range, e.g. from $10^{-4}$ to $10^{-1}$, and the value applies to all genes.
 
