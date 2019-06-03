@@ -23,5 +23,7 @@ Suggests:
     msigdbr, 
     scales, 
     ggplot2, 
-    MASS
+    MASS,
+    grid,
+    gridExtra
 RoxygenNote: 6.1.1
