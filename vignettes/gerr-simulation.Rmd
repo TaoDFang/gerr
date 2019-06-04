@@ -749,21 +749,6 @@ print(f1Diff)
 
 We observe that $F_1$ score, which combines precision ($TP/(TP+FP)$) and sensitivity (TPR), of FET+FDR is higher when few gene-sets are selected to construct GOI; otherwise, the score of `gerr` is higher. This is because when only few gene-sets are selected, `gerr` tend to find other gene-sets that are partially overlapping with the true positive hits, therefore its precision can be lower. Though as discussed before, this does not necessarily mean that the results of `gerr` is inferior, since the partially redundant gene-sets may be of interest under circumstances. Otherwise, when $p_{gs}$ is reasonably high (above 0.01), $F_1$ score of `gerr` is generally higher than FET+FDR. Namely when not few gene-sets contribute to GOI, and when many genes of selected gene-sets are chosen to construct GOI, `gerr` outperforms FET+FDR by $F_1$ score.
 
-<!--
-### Partially redundant gene-sets as hits of gerr
-
-```{r redTile, fig.width=7.5, fig.height=5}
-ggplot(avgFullProbSimRes, 
-       aes(x=factor(p_gs), y=factor(p_g), fill=medTpFpMaxOe.gerr)) +
-  facet_wrap(~p_n) +
-  geom_tile() +
-  scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol) +
-  theme(axis.text.x = element_text(angle=45, hjust=1)) +
-  ggtitle("Partially overlapping gene-sets as false-positive hits")
-```
-
--->
-
 # Results of model verification and performance evaluation in one figure
 
 Finally, we merge key results of the simulation studies into one figure. We show the particular case of $p_g=0.01$. The conclusions however are valid for other settings of $p_g$.
