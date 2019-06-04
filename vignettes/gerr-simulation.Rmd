@@ -799,8 +799,11 @@ pK <- addPanelName(f1Diff %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+%
                   "K")
 layoutMatrix <- matrix(c(NA,3,4,5,
                          1,3,4,5,
+                         1,3,4,5,
                          1,6,7,8,
+                         NA,6,7,8,
                          2,6,7,8,
+                         2,9,10,11,
                          2,9,10,11,
                          NA,9,10,11), byrow=TRUE, ncol=4)
 grid.arrange(grobs=list(pA, pB, pC, pD, pE, pF, pG, pH, pI, pJ, pK),
