@@ -55,3 +55,30 @@ pretrained_gaussian_lambda <- c(0.007956622,0.01)
 #'For gene i and pathway j, the value of matrix(i,j) is 1 is gene i belonging to pathway j otherwise 0
 "gene_pathway_matrix"
 
+#' simGenesets
+#' @description A list of gene-sets used for simulation studies
+#' @format A list of gene-sets (in the form of character vectors), with gene-set names as the names of the list.
+#' @source The \href{https://github.com/igordot/msigdbr}{msigdbr} package, and 
+#'   the \href{http://software.broadinstitute.org/gsea/msigdb}{MSigDB: Molecular Signatures Database}
+"simGenesets"
+
+#' verifKeyRes
+#' @description Key results of model verification
+#' @format A list of key results of gerr model verification
+#' @details The data was generated once and is cached to reproduce the simulation results in the vignettes.
+"verifKeyRes"
+
+#' fisherVerif
+#' @description Results of one-sided Fisher's exact test and Benjamini-Hochberg p-value correction
+#' @format A list
+#' @details The data was generated once and is cached to reproduce the simulation results in the vignettes,
+#'   it was used to compare the performance of gerr and FET+FDR procedures
+"fisherVerif"
+
+#' fullProbSimResDf
+#' @description Full results of simulation studies using the probabilistic generative model of GOIs
+#' @format A data.frame
+#' @details The data was generated once and is cached to reproduce the simulation results in the vignettes.
+#'   Note that due to the stochastic nature of sampling, in some runs, no gene-set is selected to construct 
+#'   GOI. They should be filtered out prior to downstream analysis.
+"fullProbSimResDf"
