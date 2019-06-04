@@ -33,6 +33,9 @@ library(MASS)
 library(stats)
 library(ggplot2)
 library(scales)
+library(dplyr)
+library(grid)
+library(gridExtra)
 set.seed(1887)
 ```  
 
@@ -238,10 +241,11 @@ if(!file.exists(modelVerifRdata) || params$overwriteCache) {
   system.time(verifRes <- verificate(simGenesets, 
                                      gsMatrix, 
                                      index=seq(along=simGenesets)))
+  verifPaths <- lapply(verifRes$results,
+                       function(x) x$selected_pathways_names)
   verifKeyRes <- list(isRecovered = verifRes$isRecovered,
                       selInd = verifRes$selInd,
-                      selected_pathways_names=lapply(verifRes$results,
-                                                    function(x) x$selected_pathways_names))
+                      selected_pathways_names=verifPaths)
   save(verifKeyRes, file=modelVerifRdata)
 } else {
   load(modelVerifRdata)
@@ -250,7 +254,7 @@ if(!file.exists(modelVerifRdata) || params$overwriteCache) {
 
 We first confirm that each gene-sets used as a GOI was successfully rediscovered by `gerr`.
 ```{r verficateRes}
-summary(verifKeyRes$isRecovered) ## all recovered
+all(verifKeyRes$isRecovered) ## all recovered
 ```
 
 Next we query the frequency of cases where `gerr` returned more than one gene-set.
@@ -263,7 +267,102 @@ summary(verifSelCount>1)
 
 We found that in `r sum(verifSelCount>1)` cases out of `r length(verifSelCount)`, one than one gene-set is returned by `gerr`. The gene-sets that were not used as GOI but selected by `gerr` may be regarded as *false positive hits*. However, when we examine the similarity of these gene-sets and the true positive hit using the overlap coefficient (and the average when more than one false-positive hits are available), we found that these *false-positive hits* are in fact very similar compared with the true-positive hit. And the similarity is much higher than what is expected when a random set of gene-sets are chosen and their average overlap coefficient is calculated.
 
+As a comparison, we run one-sided Fisher's exact test and adjust the p-values by Benjamini-Hochberg method (the FET+FDR procedure) using the same strategy, setting one gene-set as GOI a time.
+
+First we implement the FET+FDR stratgy.
+
+```{r fetFdr}
+fetFdr <- function(goi, bgGenes) {
+  goi <- uniqueNonNA(goi)
+  bgGenes <- uniqueNonNA(bgGenes)
+  bgDiffGoi <- setdiff(bgGenes, goi)
+  fetRes <- sapply(simGenesets, function(x) {
+     selHits <- length(intersect(x, goi))
+     nonselHits <- length(goi) - selHits
+     selNonhits <- length(x) - selHits
+     nonselNonhits <- length(bgDiffGoi) - selNonhits
+     mat <- matrix(c(selHits, nonselHits, selNonhits, nonselNonhits),2,2)
+     res <- stats::fisher.test(mat, alternative = "greater")$p.value
+  })
+  ff <- p.adjust(fetRes, "BH") ## we denote fetFdr from here on as ff
+  return(ff)
+}
+```
+
+Next we run the verification step using FET+FDR.
+
+```{r fetFdrVerif}
+fetFdrVerifRdata <- file.path(gerrRootDir, 
+                             "data/fetFdrVerification.RData")
+if(!file.exists(fetFdrVerifRdata) || params$overwriteCache) {
+  fisherVerif <- lapply(seq(along=simGenesets), function(i) {
+    goi <- simGenesets[[i]]
+    ffRes <- fetFdr(goi, bgGenes)
+    isHit <- ffRes<0.05
+    hits <- names(simGenesets)[isHit]
+    resp <- ffRes[hits]; names(resp) <- hits
+    if(length(resp)>1) {
+      cosel <- setdiff(hits, names(simGenesets)[i])
+      poe <- listOverlapCoefficient(list(goi),
+                                    simGenesets[cosel])
+      meanPoe <- mean(poe)
+    } else{
+      meanPoe <- NA
+    }
+    res <- list(hits=resp, meanPoe=meanPoe)
+    return(res)
+  })
+  save(fisherVerif, file=fetFdrVerifRdata)
+} else{
+  load(fetFdrVerifRdata)
+}
+```
+
+It is easy to confirm that FET+FDR has a sensitivity of 100%, namely all gene-sets used as input of GOI are rediscovered.
+
+```{r fetFdrSens}
+all(sapply(seq(along=simGenesets), 
+           function(i) names(simGenesets)[i] %in% names(fisherVerif[[i]]$hits)))
+```
+
+We first compare the number of false-positive hits of both methods.
+
+```{r verifFp, fig.width=4, fig.height=3}
+gerrFpCounts <- verifSelCount - 1
+fetFdrFpCounts <- sapply(fisherVerif, function(x) length(x$hits)-1)
+verifFpCounts <- data.frame(Geneset=names(simGenesets),
+                            method=factor(rep(c("gerr", "FET+FDR"),
+                                       each=length(simGenesets)),
+                                       levels=c("gerr","FET+FDR")),
+                            FP=c(gerrFpCounts, fetFdrFpCounts))
+
+fetFdrCol <- "#E6AB02"
+randomCol <- "#CCCCCC"
+gerrCol <- "#4DAF4A"
+veriFpPlot <- ggplot(verifFpCounts, 
+       aes(x=cut(FP, c(-Inf,0,1,2,3,Inf),
+                 labels=c("0", "1", "2", "3", ">3")),
+           fill=method)) +
+  scale_fill_manual(values=c(gerrCol, fetFdrCol),
+                    name="") +
+  geom_bar(position=position_dodge2(preserve="single")) +
+  xlab("False-positive hits") +
+  ylab("Gene-set count") +
+  theme(axis.text.x=element_text(angle = 0))
+print(veriFpPlot)
+```
+
+The `gerr` returned no false-positive hits in `r sprintf("%1.1f%%", mean(gerrFpCounts ==0)*100)` cases, and otherwise only returned no more than two false-positive hits. In contrast, FET+FDR very frequently returned a large number of false-positive hits (median `r median(fetFdrFpCounts)`, mad `r mad(fetFdrFpCounts)`).
+
+We believe that the false-positive hits of `gerr` are likely caused by redundancy in gene-sets. Therefore we show below the mean overlap coefficient between false-positive and true-positive hits returned by `gerr`. As a comparison, we show the value also for hits returned by FET+FDR and for randomly selected gene-sets.
+
 ```{r verificateMt1Oe, fig.height=3, fig.width=4}
+densityDf <- function(x, from=0, to=1) {
+  den <- density(x, from=from, to=to)
+  res <- data.frame(x=den$x,
+                    y=den$y/max(den$y))
+  return(res)
+}
 verifMt1AvgOe <- sapply(which(verifSelCount>1), function(i) {
   inputGs <- names(simGenesets)[i]
   selGnames <- setdiff(names(verifKeyRes$selected_pathways_names[[i]]),
@@ -272,36 +371,43 @@ verifMt1AvgOe <- sapply(which(verifSelCount>1), function(i) {
                                 simGenesets[selGnames])
   mean(poe)
 })
-verifMt1AvgOeDen <- density(verifMt1AvgOe, from=0, to=1)
-verifMt1AvgOeDenData <- data.frame(x=verifMt1AvgOeDen$x,
-                                   y=verifMt1AvgOeDen$y/max(verifMt1AvgOeDen$y))
+verifMt1AvgOeDenData <- densityDf(verifMt1AvgOe) 
 randomAvgOe <- sapply(which(verifSelCount>1), function(i) {
   selNo <- length(verifKeyRes$selected_pathways_names[[i]])
   randomGs <- sample(names(simGenesets), selNo, replace=TRUE)
   poe <- listOverlapCoefficient(simGenesets[randomGs])
   mean(poe[upper.tri(poe, diag=FALSE)])
 })
-randomAvgOeDen <- density(randomAvgOe, from=0, to=1)
-randomAvgOeDenData <- data.frame(x=randomAvgOeDen$x,
-                                 y=randomAvgOeDen$y/max(randomAvgOeDen$y))
+randomAvgOeDenData <- densityDf(randomAvgOe)
+fisherAvgOe <- na.omit(sapply(fisherVerif, function(x) x$meanPoe))
+fisherAvgOeDenData <- densityDf(fisherAvgOe)
 oeDen <- rbind(cbind(Class="gerr", verifMt1AvgOeDenData),
+               cbind(Class="FET+FDR", fisherAvgOeDenData),
                cbind(Class="random", randomAvgOeDenData))
-ggplot(oeDen,
+oeDen$Class <- factor(oeDen$Class,
+                      levels=c("gerr", "FET+FDR", "random"))
+oeDenPlot <- ggplot(oeDen,
        aes(x=x, y=y, color=Class)) +
-  scale_colour_manual(values=c("red", "darkgray"),
+  scale_colour_manual(values=c(gerrCol,
+                               fetFdrCol,
+                               randomCol),
                       name="") +
   geom_line(lwd=1.5)  + 
   ylab("Normalised density") +
-  xlab("Average overlap coefficient")
+  xlab("Mean overlap coefficient")
+print(oeDenPlot)
 ```
 
-We verify that all gene-sets that were assigned as genes of interest was successfully recovered. In 44 out of 500 gene-sets, more than one gene-set was selected by `gerr`. The average pairwise overlap coefficient between false-positive hits and the true positive hit is quite high (median `r median(verifMt1AvgOe)`, MAD `r mad(verifMt1AvgOe)`). It suggests that `gerr` is able to identify gene-sets that are highly enriched among many gene-sets.
+The average pairwise overlap coefficient between false-positive hits and the true positive hit is very high (median `r median(verifMt1AvgOe)`, MAD `r mad(verifMt1AvgOe)`), and in comparison much higher than the mean overlap coefficient between false and true positive hits returned by FET+FDR and between randomly selected gene-sets. Such *false-positive hits* are selected by `gerr` because the elastic net algorithm wil give half of the weight to two identical features. While under certain circumstances they complicate results interpretation (but much less so compared with the results of the FET+FDR procedure), in other contexts gene-sets with similar but not identical sets of genes may be potentially interesting for end users since they may reflect relevant but not identical biological functions.
+
+In short, with a very simple verification procedure, we verify that by using `gerr`, all gene-sets that were assigned as genes of interest were successfully recovered. In most cases, the only gene-set selected by `gerr` was the true positive hit. In other cases, more than one gene-set was selected by `gerr`. The co-selected gene-sets are highly redudant with the true positive hit.
+
 
 # Simulations based on a probabilistic model
 
 Next we test the performance of `gerr` using a probabilistic framework. Specifically, we assume a generative model of GOI in the following form: $$p_{g \in G} = \sum_{\omega} p_{g|\omega}p_{\omega} + p_{g_{n}}$$.
 
-The model specifies that the probability that a gene $g$ is a member of the set $G$ is modelled by the probability of the gene-set $\omega$ contributes to GOI, expressed as $p_{\omega}$, multiplied by the probability that $g$ is selected to contributed to GOI given that $\omega$ contributes to GOI, summed over all genet-sets, and then adding the probability $p_{g_{i}}$ that models the probability that the gene $g$ contributes to GOI independent of its associations with gene-sets. The two parts on the right side of the equation can be observed as a gene-set-dependent and a noise term (and therefore the subscript $n$) respectively. Apparently, $p_{g \in G}$ should be located between $[0,1]$. 
+The model specifies that the probability that a gene $g$ is a member of the set $G$ is modelled by the probability of the gene-set $\omega$ contributes to GOI, expressed as $p_{\omega}$, multiplied by the probability that $g$ is selected to contributed to GOI given that $\omega$ contributes to GOI, summed over all genet-sets, and then adding the term $p_{g_{n}}$ that models the probability that the gene $g$ contributes to GOI independent of its associations with gene-sets. The two parts on the right side of the equation can be observed as a gene-set dependent and a noise term (therefore the subscript $n$) respectively. Apparently, $p_{g \in G}$ should be located between $[0,1]$. 
 
 In the following simulations, we assume that $p_{\omega}$ follows a binomial distribution that is specified by the parameter $p_{gs}$. For simplicity, we model $p_{g|\omega}$ as a binomial distribution specified by the parameter $p_{g}$ and assume that the same parameter applies to all selected gene-sets. Furthermore, we assume that $p_{g_{n}}$ is modelled by a small number $p_n$ that varies in a given range, e.g. from $10^{-4}$ to $10^{-1}$, and the value applies to all genes.
 
@@ -363,18 +469,7 @@ probSim <- function(p_gs=0.01, p_g=0.5, p_n=1E-3, seed=1L) {
   }
   
   ## compare with Fisher's exact test + FDR (ff)
-  
-  bgDiffGoi <- setdiff(bgGenes, probGoi)
-  fetRes <- sapply(simGenesets, function(x) {
-     selHits <- length(intersect(x, probGoi))
-     nonselHits <- length(probGoi) - selHits
-     selNonhits <- length(x) - selHits
-     nonselNonhits <- length(bgDiffGoi) - selNonhits
-     mat <- matrix(c(selHits, nonselHits, selNonhits, nonselNonhits),2,2)
-     res <- stats::fisher.test(mat, alternative = "greater")$p.value
-  })
-  ff <- p.adjust(fetRes, "BH") ## we denote fetFdr from here on as ff
-  
+  ff <- fetFdr(goi=probGoi, bgGenes=bgGenes)
   ffSelGs <- names(which(ff<=0.05))
   
   ffTp <- intersect(ffSelGs, gsSelNames)
@@ -431,7 +526,7 @@ The results can be interpreted as follows.
 
 ## A full scale simulation with the probabilistic model and results interpretation
 
-Below we perform the full-scale simulation with the probabilistic model, using a variety of combinations of the parameters $p_{gs}$, $p_g$, and $p_n$. For each parameter set, five independent simulations are run. The median values of the five simulation runs are reporteed for each measure (true-positive rate, false-positive rate, *etc.*). 
+Below we perform the full-scale simulation with the probabilistic model, using a variety of combinations of the parameters $p_{gs}$, $p_g$, and $p_n$. For each parameter set, five independent simulations are run. 
 
 ```{r fullProbSim, warning=FALSE}
 p_gs_cand <- c(0.002, 0.005, 0.01,
@@ -453,27 +548,32 @@ if(!file.exists(probSimRdata) || params$overwriteCache) {
     probSim(p_gs=x[1], p_g=x[2], p_n=x[3], seed=x[4])
   }))
   fullProbSimResDf <- as.data.frame(t(fullProbSimRes))
-  ## due to sampling, in some cases no gene-set is selected at all 
-  ## to contribute to GOI. These situations are excluded.
-  posFullProbSimResDf <- with(fullProbSimResDf,
-                           fullProbSimResDf[nTP.gerr+nFN.gerr!=0,])
-  avgFullProbSimRes <- aggregate(posFullProbSimResDf,
-                                 list(posFullProbSimResDf$p_gs, 
-                                      posFullProbSimResDf$p_g, 
-                                      posFullProbSimResDf$p_n), median)
-  save(avgFullProbSimRes, file=probSimRdata)
+  save(fullProbSimResDf, file=probSimRdata)
 } else {
   load(probSimRdata)
 }
+```
+
+Due to the stochastic nature of sampling, in some runs no gene-set is selected at all to contribute to GOI, especially when $p_{gs}$ is set small. These cases are excluded from the analysis below, because they will distort the results. Including them however do not change the conclusions.
+
+The median values of the five simulation runs are reporteed for each measure (true-positive rate, false-positive rate, *etc.*). 
+
+```{r avgProbSimRes}
+posFullProbSimResDf <- with(fullProbSimResDf,
+                            fullProbSimResDf[nTP.gerr+nFN.gerr!=0,])
+avgFullProbSimRes <- aggregate(posFullProbSimResDf,
+                               list(posFullProbSimResDf$p_gs, 
+                                    posFullProbSimResDf$p_g, 
+                                    posFullProbSimResDf$p_n), median)
 ```
 
 # Interpretation of the simulation results
 
 We investigate the simulation results by visualizing true positive rate, false positive rate, and $F_{1}$ scores of the `gerr` and FET+FDR procedure.
 
-## True positive rate (TPR)
+## Sensitivity, or true positive rate (TPR)
 
-The plot below visualizes how true positive rate (TPR) varies by the probability that each gene-set contributes to GOI ($p_{gs}$) and the probability of genes in each gene-set contribute to GOI ($p_g$), conditional on the noise probability $p_n$. Five independent simulations were performed for each parameter set, and the median value is used for visualization.
+The plot below visualizes how sensitivity, or true positive rate (TPR) varies by the probability that each gene-set contributes to GOI ($p_{gs}$) and the probability of genes in each gene-set contribute to GOI ($p_g$), conditional on the noise probability $p_n$. Five independent simulations were performed for each parameter set, and the median value is used for visualization.
 
 ```{r tprGerr, fig.width=7.5, fig.height=5}
 lowCol <- "#004495"
@@ -522,9 +622,10 @@ diffLowCol <- "#E6AB02"
 diffMidCol <- "#CCCCCC"
 diffHighCol <- "#4DAF4A"
 tprDiff <- ggplot(avgFullProbSimRes, aes(x=factor(p_gs), y=factor(p_g), fill=TPR.gerr-TPR.ff)) +
-  facet_wrap(~p_n) +
+  facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
   scale_fill_gradient2(low=diffLowCol, mid=diffMidCol, high=diffHighCol, midpoint=0,
+                       limits=c(-0.5, 0.5), oob=scales::squish,
                        name=expression(Delta~TPR)) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("True positive rate difference (gerr - FET+FDR)") +
@@ -534,17 +635,19 @@ print(tprDiff)
 
 It seems that when $p_{g}$, the probability of genes in a gene-set to contribute to GOI, is low, and when the noise ($p_{n}$) is strong, `gerr` has higher sensitivity (true-positive rate) than FET+FDR. Otherwise, when $p{g}$ is high, both `gerr` and FET+FDR has high sensitivity that is near 1.
 
-## False positive rate (FPR)
+## Specificity, or 1-false positive rate (FPR)
 
-Next we examine false positive rate (FPR), which equals 1-specificity. First, we visualize the variation precision of `gerr` by varying parameters.
+Next we examine specificity, which equals 1-false-positive rate First, we visualize the variation precision of `gerr` by varying parameters.
 
 ```{r fprGerr, fig.width=7.5, fig.height=5}
 fprGerr <- ggplot(avgFullProbSimRes, 
-                  aes(x=factor(p_gs), y=factor(p_g), fill=FPR.gerr)) +
+                  aes(x=factor(p_gs), y=factor(p_g), fill=1-FPR.gerr)) +
   facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
-  scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, name="FPR",
-                       limits=c(0,0.5), oob=scales::squish) +
+  scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, 
+                       name="1-FPR",
+                       midpoint = 0.5,
+                       limits=c(0,1), oob=scales::squish) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("False positive rate of gerr") +
   xlab(expression(p[gs])) + ylab(expression(p[g]))
@@ -557,11 +660,13 @@ Next we reveal how FPR change in the case of FET+FDR.
 
 ```{r fprFF, fig.width=7.5, fig.height=5}
 fprFF <- ggplot(avgFullProbSimRes, 
-                aes(x=factor(p_gs), y=factor(p_g), fill=FPR.ff)) +
+                aes(x=factor(p_gs), y=factor(p_g), fill=1-FPR.ff)) +
  facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
-  scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, name="FPR", 
-                       limits=c(0,0.5), oob=scales::squish) +
+  scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, 
+                       name="1-FPR", 
+                       midpoint = 0.5,
+                       limits=c(0,1), oob=scales::squish) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("False positive rate of FET+FDR") +
   xlab(expression(p[gs])) + ylab(expression(p[g]))
@@ -572,20 +677,20 @@ The plot below visualizes the difference of FPR.
 
 ```{r fprDiff, fig.height=5, fig.width=7.5}
 fprDiff <- ggplot(avgFullProbSimRes, 
-                  aes(x=factor(p_gs), y=factor(p_g), fill=FPR.gerr - FPR.ff)) +
+                  aes(x=factor(p_gs), y=factor(p_g), fill=(1-FPR.gerr) - (1-FPR.ff))) +
   facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
   scale_fill_gradient2(low=diffLowCol, mid=diffMidCol, high=diffHighCol,
                        midpoint = 0,
-                       limits=c(-0.4, 0.4), oob=scales::squish,
-                       name=expression(Delta~FPR)) +
+                       limits=c(-0.5, 0.5), oob=scales::squish,
+                       name=expression(Delta~"(1-FPR)")) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("False positive ratedifference: gerr - FET+FDR") +
   xlab(expression(p[gs])) + ylab(expression(p[g]))
 print(fprDiff)
 ```
 
-We observed that when $p_{g}$ is low, FET+FDR has slightly lower FPR than `gerr` (on the cost of having slightly lower sensitivty). Otherwise, gerr has much lower false-positive rate than the FET+FDR procedure. The higher $p_{gs}$ and $p_{g}$ values are, the stronger are the difference in favor of `gerr`.
+We observe that when $p_{g}$ is low, FET+FDR has slightly lower FPR than `gerr` (on the cost of having slightly lower sensitivty). Otherwise, gerr has much lower false-positive rate than the FET+FDR procedure. The higher $p_{gs}$ and $p_{g}$ values are, the stronger are the difference in favor of `gerr`.
 
 ## $F_1$ score
 
@@ -597,8 +702,9 @@ f1Gerr <- ggplot(avgFullProbSimRes,
   facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
   scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, 
-                       name=expression(F[1]), 
-                       limits=c(0,1), oob=scales::squish) +
+                       name=expression(F[1]~score), 
+                       limits=c(0,1), midpoint = 0.5,
+                       oob=scales::squish) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("F1 score of gerr") +
   xlab(expression(p[gs])) + ylab(expression(p[g]))
@@ -615,7 +721,8 @@ f1FF <- ggplot(avgFullProbSimRes,
   facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
   scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, 
-                       name=expression(F[1]), limits=c(0,1), 
+                       name=expression(F[1]~score), 
+                       limits=c(0,1), midpoint=0.5,
                        oob=scales::squish) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("F1 score of FET+FDR") +
@@ -632,29 +739,76 @@ f1Diff <- ggplot(avgFullProbSimRes,
   geom_tile() +
   scale_fill_gradient2(low=diffLowCol, mid=diffMidCol, high=diffHighCol, 
                        midpoint = 0,
-                       name=expression(Delta~F[1]), 
-                       limits=c(-1, 1), oob=scales::squish) +
+                       name=expression(Delta~F[1]~score), 
+                       limits=c(-0.5, 0.5), oob=scales::squish) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("F1 score difference: gerr - FET+FDR") +
   xlab(expression(p[gs])) + ylab(expression(p[g]))
 print(f1Diff)
 ```
 
-We observe that $F_1$ score of `gerr` is generally higher than FET+FDR, especially when many gene-sets contribute to GOI, and when many genes of selected gene-sets do contribute to GOI.
-<!--
-### Partially redundant gene-sets as hits of gerr
+We observe that $F_1$ score, which combines precision ($TP/(TP+FP)$) and sensitivity (TPR), of FET+FDR is higher when few gene-sets are selected to construct GOI; otherwise, the score of `gerr` is higher. This is because when only few gene-sets are selected, `gerr` tend to find other gene-sets that are partially overlapping with the true positive hits, therefore its precision can be lower. Though as discussed before, this does not necessarily mean that the results of `gerr` is inferior, since the partially redundant gene-sets may be of interest under circumstances. Otherwise, when $p_{gs}$ is reasonably high (above 0.01), $F_1$ score of `gerr` is generally higher than FET+FDR. Namely when not few gene-sets contribute to GOI, and when many genes of selected gene-sets are chosen to construct GOI, `gerr` outperforms FET+FDR by $F_1$ score.
 
-```{r redTile, fig.width=7.5, fig.height=5}
-ggplot(avgFullProbSimRes, 
-       aes(x=factor(p_gs), y=factor(p_g), fill=medTpFpMaxOe.gerr)) +
-  facet_wrap(~p_n) +
-  geom_tile() +
-  scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol) +
-  theme(axis.text.x = element_text(angle=45, hjust=1)) +
-  ggtitle("Partially overlapping gene-sets as false-positive hits")
+# Results of model verification and performance evaluation in one figure
+
+Finally, we merge key results of the simulation studies into one figure. We show the particular case of $p_g=0.01$. The conclusions however are valid for other settings of $p_g$.
+
+```{r oneFigure, echo=FALSE, fig.width=14, fig.height=9}
+addPanelName <- function(plot, text) {
+  textg <- textGrob(text, x=unit(0, "npc"), y=unit(1, "npc"), 
+                    just=c("left", "top"),
+                    gp=gpar(col="black", fontsize=18))
+  compactPlot <- plot + theme(
+    plot.margin = unit(c(0,0,0,0), "cm"),
+    axis.title.x = element_text(margin=margin(0,0,0,0)), 
+    axis.title.y = element_text(margin=margin(0,0,0,0)))
+  res <- arrangeGrob(compactPlot,
+                     top=textg,
+                     padding = unit(0.15, "line"))
+  return(res)
+}
+pA <- addPanelName(veriFpPlot,"A")
+pB <- addPanelName(oeDenPlot,
+                  "B")
+pC <- addPanelName(tprGerr %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
+                    ggtitle("Sensitivity [gerr]"),
+                  "C")
+pD <- addPanelName(fprGerr %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
+                    ggtitle("Specificity [gerr]"),
+                  "D")
+pE <- addPanelName(f1Gerr %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+%
+                    ggtitle(expression(F[1]~score~"[gerr]")),
+                  "E")
+pF <- addPanelName(tprFF %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
+                    ggtitle("Sensitivity [FET+FDR]"),
+                  "F")
+pG <- addPanelName(fprFF %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+%
+                    ggtitle("Specificity [FET+FDR]"),
+                  "G")
+pH <- addPanelName(f1FF %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
+                    ggtitle(expression(F[1]~score~"[FET+FDR]")),
+                  "H")
+pI <- addPanelName(tprDiff %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
+                    ggtitle("Difference"),
+                  "I")
+pJ <- addPanelName(fprDiff %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
+                    ggtitle("Difference"),
+                  "J")
+pK <- addPanelName(f1Diff %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
+                    ggtitle("Difference"),
+                  "K")
+layoutMatrix <- matrix(c(NA,3,4,5,
+                         1,3,4,5,
+                         1,3,4,5,
+                         1,6,7,8,
+                         NA,6,7,8,
+                         2,6,7,8,
+                         2,9,10,11,
+                         2,9,10,11,
+                         NA,9,10,11), byrow=TRUE, ncol=4)
+grid.arrange(grobs=list(pA, pB, pC, pD, pE, pF, pG, pH, pI, pJ, pK),
+             layout_matrix=layoutMatrix)
 ```
-
--->
 
 # Conclusions
 
