@@ -682,7 +682,7 @@ fprDiff <- ggplot(avgFullProbSimRes,
   geom_tile() +
   scale_fill_gradient2(low=diffLowCol, mid=diffMidCol, high=diffHighCol,
                        midpoint = 0,
-                       limits=c(-0.5, 0.), oob=scales::squish,
+                       limits=c(-0.5, 0.5), oob=scales::squish,
                        name=expression(Delta~"(1-FPR)")) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
   ggtitle("False positive ratedifference: gerr - FET+FDR") +
