@@ -761,10 +761,10 @@ addPanelName <- function(plot, text) {
   compactPlot <- plot + theme(
     plot.margin = unit(c(0,0,0,0), "cm"),
     axis.title.x = element_text(margin=margin(0,0,0,0)), 
-    axis.title.y = element_text(margin=margin(0,0,0,0)), 
-    plot.title = element_text(margin=margin(0,0,0,0)))
+    axis.title.y = element_text(margin=margin(0,0,0,0)))
   res <- arrangeGrob(compactPlot,
-                     top=textg)
+                     top=textg,
+                     padding = unit(0.15, "line"))
   return(res)
 }
 pA <- addPanelName(veriFpPlot,"A")
