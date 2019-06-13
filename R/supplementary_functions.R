@@ -124,7 +124,7 @@ from_id2name=function(selected_pathways){
   reactome_ontology_names=V(reactome_ontology)$pathway_names
   names(reactome_ontology_names)=as_ids(V(reactome_ontology))
 
-  names=lapply(selected_pathways, function(x){
+  pathway_names=unlist(lapply(selected_pathways, function(x){
     if(grepl("#",x)){
       if(grepl("GO",x)){
         y=strsplit(x,split = "#")[[1]]
@@ -140,10 +140,10 @@ from_id2name=function(selected_pathways){
         unname(reactome_ontology_names[x])
       }
     }
-  })
-  names[is.na(names)] <- selected_pathways
-  names(names) <- selected_pathways
-  return(names)
+  }))
+  #names[is.na(names)] <- selected_pathways
+  names(pathway_names) <- selected_pathways
+  return(pathway_names)
 }
 
 #' get_steps

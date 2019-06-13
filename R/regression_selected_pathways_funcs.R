@@ -16,6 +16,7 @@
 #'alpha=1 is the lasso penalty, and alpha=0 the ridge penalty. Default value: 0.5.
 #' @param family Response type, currently \code{gaussian} and \code{binomial} are supported and the gaussian family is the default. Future extensions are likely.
 #' @param lambda A user supplied lambda sequence, see \code{\link{glmnet}} and use with care.
+#' @param verbose If supprese warning messesge from gerr functions. 0 or 1. Default value 0 means suppresing warning message.
 #' @param ... Other paramaters passed to the \code{\link{cv.glmnet}} function.
 #' @return  A list of following elements:
 #' \itemize{
@@ -37,6 +38,7 @@
 #'  gene_pathway_matrix=NULL,lambda=NULL,alpha=0.5)
 regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=0.5,
                                       family=c("gaussian", "binomial"), lambda=NULL,
+                                      verbose=0,
                                       ...){
   family <- match.arg(family)
   if(is.null(gene_pathway_matrix)){
@@ -52,7 +54,9 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
   module_labels[module_common_genes] <- 1
   
   if(length(module_common_genes)<=1) {
-    warning("Not enough genes in the set of genes of interest. NULL is returned.\n")
+    if(!verbose){
+      warning("Not enough genes in the set of genes of interest. NULL is returned.\n")
+    }
     return(NULL)
   }
   
@@ -63,7 +67,9 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
                   ...))
 
   if(class(cvfit)=="try-error") {
-    warning("cv.glmnet failed. The error and the model input is returned for debugging purposes.\n")
+    if(!verbose){
+      warning("cv.glmnet failed. The error and the model input is returned for debugging purposes.\n")
+    }
     res <- list(model=cvfit,
                 x=gene_pathway_matrix,
                 y=module_labels)
@@ -84,6 +90,7 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
   selected_pathways <- all_pathways[selected_index]
   selected_coef <- non0coef[isPosCoef]
   names(selected_coef) <- selected_pathways
+
   
   if(any(isPosCoef)){
     fisher_exact_test_results <- fisher_exact_test(selected_pathways,module_common_genes,gene_pathway_matrix=gene_pathway_matrix)
@@ -91,7 +98,6 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
     selected_pathways_num_genes <- fisher_exact_test_results$selected_pathways_num_genes
     
     new_order <- order(selected_coef,decreasing = TRUE)
-    
     res <- list(selected_pathways_names=from_id2name(selected_pathways=names(selected_coef[new_order])),
                 selected_pathways_coef=selected_coef[new_order],
                 selected_pathways_fisher_pvalue=selected_pathways_fisher_pvalue[new_order],
@@ -101,7 +107,10 @@ regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=
                 y=module_labels)
 
   } else {
-    warning("No selected gene-sets with the given parameter set. NULL is returned.\n")
+    if(!verbose){
+      warning("No selected gene-sets with the given parameter set. NULL is returned.\n")
+    }
+    
     res <- list(model=cvfit, 
                 x=gene_pathway_matrix,
                 y=module_labels)
