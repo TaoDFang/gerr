@@ -16,7 +16,7 @@
 #'alpha=1 is the lasso penalty, and alpha=0 the ridge penalty. Default value: 0.5.
 #' @param family Response type, currently \code{gaussian} and \code{binomial} are supported and the gaussian family is the default. Future extensions are likely.
 #' @param lambda A user supplied lambda sequence, see \code{\link{glmnet}} and use with care.
-#' @param verbose If supprese warning messesge from gerr functions. 0 or 1. Default value 0 means suppresing warning message.
+#' @param verbose If supprese warning messesge from gerr functions. TRUE or FALSE. Default value TRUE, not suppressing warning messages.
 #' @param ... Other paramaters passed to the \code{\link{cv.glmnet}} function.
 #' @return  A list of following elements:
 #' \itemize{
@@ -38,7 +38,7 @@
 #'  gene_pathway_matrix=NULL,lambda=NULL,alpha=0.5)
 regression_selected_pathways=function(gene_input,gene_pathway_matrix=NULL,alpha=0.5,
                                       family=c("gaussian", "binomial"), lambda=NULL,
-                                      verbose=0,
+                                      verbose=TRUE,
                                       ...){
   family <- match.arg(family)
   if(is.null(gene_pathway_matrix)){
