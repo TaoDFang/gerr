@@ -801,7 +801,7 @@ statFig <- ggplot(statFigData,
 print(statFig)
 ```
 
-```{r oneFigure, echo=FALSE, fig.width=8, fig.height=8}
+```{r oneFigure, echo=FALSE, fig.width=9, fig.height=8}
 og <- theme_minimal() +
   theme(axis.text = element_text(size=12),
         axis.title = element_text(size=14),
