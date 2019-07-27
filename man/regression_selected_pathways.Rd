@@ -6,7 +6,7 @@
 \usage{
 regression_selected_pathways(gene_input, gene_pathway_matrix = NULL,
   alpha = 0.5, family = c("gaussian", "binomial"), lambda = NULL,
-  verbose = 0, ...)
+  verbose = TRUE, ...)
 }
 \arguments{
 \item{gene_input}{A vecor of genes to be annotated. It should have same ID types(Ensembl ID, HUGO gene symbol)
@@ -28,7 +28,7 @@ alpha=1 is the lasso penalty, and alpha=0 the ridge penalty. Default value: 0.5.
 
 \item{lambda}{A user supplied lambda sequence, see \code{\link{glmnet}} and use with care.}
 
-\item{verbose}{If supprese warning messesge from gerr functions. 0 or 1. Default value 0 means suppresing warning message.}
+\item{verbose}{If supprese warning messesge from gerr functions. TRUE or FALSE. Default value TRUE, not suppressing warning messages.}
 
 \item{...}{Other paramaters passed to the \code{\link{cv.glmnet}} function.}
 }
