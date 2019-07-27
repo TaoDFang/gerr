@@ -645,11 +645,11 @@ fprGerr <- ggplot(avgFullProbSimRes,
   facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
   scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, 
-                       name="1-FPR",
+                       name="Specificity",
                        midpoint = 0.5,
                        limits=c(0,1), oob=scales::squish) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
-  ggtitle("False positive rate of gerr") +
+  ggtitle("Specificity of gerr") +
   xlab(expression(p[gs])) + ylab(expression(p[g]))
 print(fprGerr)
 ```
@@ -664,11 +664,11 @@ fprFF <- ggplot(avgFullProbSimRes,
  facet_wrap(~p_n, labeller = label_both) +
   geom_tile() +
   scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, 
-                       name="1-FPR", 
+                       name="Specificity", 
                        midpoint = 0.5,
                        limits=c(0,1), oob=scales::squish) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
-  ggtitle("False positive rate of FET+FDR") +
+  ggtitle("Specificity of FET+FDR") +
   xlab(expression(p[gs])) + ylab(expression(p[g]))
 print(fprFF)
 ```
@@ -683,9 +683,9 @@ fprDiff <- ggplot(avgFullProbSimRes,
   scale_fill_gradient2(low=diffLowCol, mid=diffMidCol, high=diffHighCol,
                        midpoint = 0,
                        limits=c(-0.5, 0.5), oob=scales::squish,
-                       name=expression(Delta~"(1-FPR)")) +
+                       name=expression(Delta~"Specificity")) +
   theme(axis.text.x = element_text(angle=45, hjust=1)) +
-  ggtitle("False positive ratedifference: gerr - FET+FDR") +
+  ggtitle("Specificity ratedifference: gerr - FET+FDR") +
   xlab(expression(p[gs])) + ylab(expression(p[g]))
 print(fprDiff)
 ```
@@ -751,62 +751,75 @@ We observe that $F_1$ score, which combines precision ($TP/(TP+FP)$) and sensiti
 
 # Results of model verification and performance evaluation in one figure
 
-Finally, we merge key results of the simulation studies into one figure. We show the particular case of $p_g=0.01$. The conclusions however are valid for other settings of $p_g$.
+Finally, we merge key results of the simulation studies into two figures. We show the particular case of $p_g=0.01$. The conclusions however are valid for other settings of $p_g$.
 
-```{r oneFigure, echo=FALSE, fig.width=14, fig.height=9}
-addPanelName <- function(plot, text) {
-  textg <- textGrob(text, x=unit(0, "npc"), y=unit(1, "npc"), 
-                    just=c("left", "top"),
-                    gp=gpar(col="black", fontsize=18))
-  compactPlot <- plot + theme(
+```{r figurePanel, echo=FALSE}
+## the function is available in ribiosUtils package that will be submitted to CRAN
+figurePanel <- function(gg, title) {
+  titleg <- grid::textGrob(title, x=unit(0, "npc"), y=unit(1, "npc"), 
+                          just=c("left", "top"),
+                          gp=grid::gpar(col="black", fontsize=18, fontface="bold"))
+  compactPlot <- gg + ggplot2::theme(
     plot.margin = unit(c(0,0,0,0), "cm"),
-    axis.title.x = element_text(margin=margin(0,0,0,0)), 
-    axis.title.y = element_text(margin=margin(0,0,0,0)))
-  res <- arrangeGrob(compactPlot,
-                     top=textg,
-                     padding = unit(0.15, "line"))
+    axis.title.x = ggplot2::element_text(margin=ggplot2::margin(0,0,0,0)), 
+    axis.title.y = ggplot2::element_text(margin=ggplot2::margin(0,0,0,0)))
+  res <- gridExtra::arrangeGrob(compactPlot,
+                                top=titleg,
+                                padding = unit(0.15, "line"))
   return(res)
 }
-pA <- addPanelName(veriFpPlot,"A")
-pB <- addPanelName(oeDenPlot,
-                  "B")
-pC <- addPanelName(tprGerr %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
-                    ggtitle("Sensitivity [gerr]"),
-                  "C")
-pD <- addPanelName(fprGerr %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
-                    ggtitle("Specificity [gerr]"),
-                  "D")
-pE <- addPanelName(f1Gerr %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+%
-                    ggtitle(expression(F[1]~score~"[gerr]")),
-                  "E")
-pF <- addPanelName(tprFF %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
-                    ggtitle("Sensitivity [FET+FDR]"),
-                  "F")
-pG <- addPanelName(fprFF %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+%
-                    ggtitle("Specificity [FET+FDR]"),
-                  "G")
-pH <- addPanelName(f1FF %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
-                    ggtitle(expression(F[1]~score~"[FET+FDR]")),
-                  "H")
-pI <- addPanelName(tprDiff %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
-                    ggtitle("Difference"),
-                  "I")
-pJ <- addPanelName(fprDiff %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
-                    ggtitle("Difference"),
-                  "J")
-pK <- addPanelName(f1Diff %+% dplyr::filter(avgFullProbSimRes, p_n==0.001) %+% 
-                    ggtitle("Difference"),
-                  "K")
-layoutMatrix <- matrix(c(NA,3,4,5,
-                         1,3,4,5,
-                         1,3,4,5,
-                         1,6,7,8,
-                         NA,6,7,8,
-                         2,6,7,8,
-                         2,9,10,11,
-                         2,9,10,11,
-                         NA,9,10,11), byrow=TRUE, ncol=4)
-grid.arrange(grobs=list(pA, pB, pC, pD, pE, pF, pG, pH, pI, pJ, pK),
+```
+
+```{r mergeGerrFTE, fig.height=6, fig.width=8}
+statFigParentData <- avgFullProbSimRes %>% select(p_gs, p_g, p_n,
+                                            Sensitivity.gerr=TPR.gerr,
+                                            FPR.gerr,
+                                            F1.gerr,
+                                            Sensitivity.ff=TPR.ff,
+                                            FPR.ff,
+                                            F1.ff) %>%
+  mutate(Specificity.gerr=1-FPR.gerr,
+         Specificity.ff=1-FPR.ff) %>%
+  select(-FPR.gerr, -FPR.ff)
+statFigData <- statFigParentData %>% reshape2::melt(id.vars=c("p_gs", "p_g", "p_n")) %>%
+  mutate(Type=factor(sapply(strsplit(as.character(variable), "\\."), "[[", 1L),
+                     levels=c("Sensitivity", "Specificity", "F1")),
+         Method=factor(sapply(strsplit(as.character(variable), "\\."), "[[", 2L),
+                       levels=c("gerr", "ff"))) %>%
+  select(-variable)
+levels(statFigData$Method) <- c("gerr", "FET+FDR")
+statFig <- ggplot(statFigData,
+                  aes(x=factor(p_gs), y=factor(p_g), fill=value)) +
+  facet_grid(Method~Type, switch="y") +
+  geom_tile() +
+  scale_fill_gradient2(low=lowCol, mid=midCol, high=highCol, 
+                       midpoint = 0.5, name="",
+                       limits=c(0, 1), oob=scales::squish) +
+  theme(axis.text.x = element_text(angle=45, hjust=1)) +
+  ggtitle("") +
+  xlab(expression(p[gs])) + ylab(expression(p[g]))
+print(statFig)
+```
+
+```{r oneFigure, echo=FALSE, fig.width=8, fig.height=8}
+og <- theme_minimal() +
+  theme(axis.text = element_text(size=12),
+        axis.title = element_text(size=14),
+        strip.text = element_text(size=12),
+        strip.background = element_rect(colour=NA, fill="lightgray"),
+        strip.background.y = element_rect(fill=gray(0.1)),
+        strip.text.y = element_text(face = "bold", colour = "white"),
+        strip.text.x = element_text(face = "bold"),
+        legend.text = element_text(size=12),
+        legend.title = element_text(size=14))
+theme_set(og)
+pA <- figurePanel(veriFpPlot ,"A")
+pB <- figurePanel(oeDenPlot, "B")
+pC <- figurePanel(statFig, "C")
+layoutMatrix <- matrix(c(1, 2, 
+                         3, 3,
+                         3, 3), byrow=TRUE, ncol=2)
+grid.arrange(grobs=list(pA, pB, pC),
              layout_matrix=layoutMatrix)
 ```
 
